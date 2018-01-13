@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name        megucascript
+// @name        medukatheguca
 // @namespace   megucasoft
-// @description Does a lot of stuff
+// @description roll highlighter
 // @include     https://meguca.org/*
-// @version     0.9
-// @author		medukasthegucas
+// @version     0.9.2
 // @grant       none
 // ==/UserScript==
 
@@ -14,7 +13,9 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["edenOption", "Eden Now Playing Banner"],
                       ["pyuOption", "Pyu Coloring~"],
                       ["rouletteOption", "Roulette"],
-                      ["decideOption", "Decision Coloring"]];
+                      ["decideOption", "Decision Coloring"],
+                      ["dumbPosters", "Dumb xposters"],
+                      ["sharesOption", "Shares Formatting"]];
 
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
@@ -23,6 +24,12 @@ var flashingDuration = "infinite";
 
 // For most new features, you'll want to put a call to your function in this function
 function handlePost(post) {
+    if (currentlyEnabledOptions.has("sharesOption")) {
+        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
+        for (var j = shares.length - 1; j >= 0; j--) {
+            parseShares(post, shares[j]);
+        }
+    }
     if (currentlyEnabledOptions.has("diceOption")) {
         var dice = findMultipleShitFromAString(post.innerHTML, /<strong>#(\d*)d(\d+) \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
         for (var j = dice.length - 1; j >= 0; j--) {
@@ -46,6 +53,9 @@ function handlePost(post) {
         for (var j = decide.length - 1; j >= 0; j--) {
             parseDecide(post, decide[j]);
         }
+    }
+    if (currentlyEnabledOptions.has("dumbPosters")) {
+        checkForDumbPost(post);
     }
 }
 
@@ -105,7 +115,7 @@ function insertCuteIntoCSS() {
         ".rainbow_roll { animation: rainbow_blinker 2s linear " + getIterations(2) + "; color: red; } @keyframes rainbow_blinker { 14% {color: orange} 28% {color: yellow} 42% {color: green} 57% {color: blue} 71% {color: indigo} 85% {color: violet} }" +
         ".dangerous_roll {font-size: 110%; color: #f00000; }" +
         ".dead_fuck { color: #e55e5e; }" +
-        ".decision_roll { animation: decision_blinker 0.4s linear 2; color: green; } @keyframes decision_blinker { 50% { color: lightgreen } }" +
+        ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
         ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }";
     document.head.appendChild(css);
 }
@@ -216,6 +226,37 @@ function parseDecide(post, decide) {
     post.innerHTML = before + newInner + retreivedRoll + after;
 }
 
+function parseShares(post, shares) {
+    var options = shares[1].split(",");
+    var n = shares[2]; //Skipping [3] (amount of faces on die), since we just need to know which roll value was highest.
+    var shareValues = shares[4].split(" + ");
+    for (var j = 0; j < shareValues.length; j++) {
+        shareValues[j] = Number(shareValues[j]); //Because FUCK YOU FUCKING JAVASCRIPT END YOURSELF YOU SHIT AAAAAAAAAAAAAAAA FUCK
+    }
+
+    var before = post.innerHTML.substring(0, shares.index);
+    var after = post.innerHTML.substring(shares.index + shares[0].length);
+    var highestValue = Math.max.apply(Math, shareValues);
+
+    if (options.length != n || n == 1) return;
+
+    for (var j = 0; j < shareValues.length; j++) {
+        if (shareValues[j] == highestValue) {
+            options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + " (" + shareValues[j] + ")</strong><strong>";
+        } else {
+            options[j] = options[j] + " (" + shareValues[j] + ")";
+        }
+    }
+    var newInner = options.join("<br>");
+    if (before.substring(before.length-4) != "<br>" && before.substring(before.length-4) != "ote>") {
+        before += "<br>";
+    }
+    if (after.substring(0, 4) != "<br>" && after.substring(0, 4) != "<blo") {
+        after = "<br>" + after;
+    }
+    post.innerHTML = before + "<strong>" + newInner + "</strong>" + after;
+}
+
 function checkEm(divided) {
     if (divided.length < 2) return false;
 
@@ -226,7 +267,6 @@ function checkEm(divided) {
             break;
         }
     }
-
     return repeatingdigits;
 }
 
@@ -288,40 +328,81 @@ function getCurrentOptions() {
 }
 
 function setUpEdenBanner() {
-	var banner = document.getElementById("banner-center");
-	banner.innerHTML = "<a href=\"http://edenofthewest.com/\" target=\"_blank\">[synced] DJ</a>&nbsp;&nbsp;<a title=\"Click to google song\" href=\"https://www.google.com.br/search?q=gomin\" target=\"_blank\"><b>Song</b></a></b>";
-	getInfoFromEden();
-	window.setInterval(getInfoFromEden, 10000);
+    var banner = document.getElementById("banner-center");
+    banner.innerHTML = "<a href=\"http://edenofthewest.com/\" target=\"_blank\">[synced] DJ</a>&nbsp;&nbsp;<a title=\"Click to google song\" href=\"https://www.google.com.br/search?q=gomin\" target=\"_blank\"><b>Song</b></a></b>";
+    getInfoFromEden();
+    window.setInterval(getInfoFromEden, 10000);
 }
 
 function getInfoFromEden() {
-	xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			updateEdenBanner(JSON.parse(this.responseText));
-		}
-	};
-	xhttp.open("GET", "https://edenofthewest.com/ajax/status.php", true);
-	xhttp.send();
+    xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            updateEdenBanner(JSON.parse(this.responseText));
+        }
+    };
+    xhttp.open("GET", "https://edenofthewest.com/ajax/status.php", true);
+    xhttp.send();
 }
 
 function updateEdenBanner(edenJSON) {
-	var banner = document.getElementById("banner-center");
-	var djInfo = banner.children[0];
-	var songInfo = banner.children[1];
+    var banner = document.getElementById("banner-center");
+    var djInfo = banner.children[0];
+    var songInfo = banner.children[1];
 
-	djInfo.innerHTML = "[" + edenJSON.listeners + "] " + edenJSON.dj;
-	songInfo.href = "https://www.google.com.br/search?q=" + encodeURIComponent(edenJSON.current);
-	songInfo.innerHTML = "<b>" + edenJSON.current + "</b>";
+    djInfo.innerHTML = "[" + edenJSON.listeners + "] " + edenJSON.dj;
+    songInfo.href = "https://www.google.com.br/search?q=" + encodeURIComponent(edenJSON.current);
+    songInfo.innerHTML = "<b>" + edenJSON.current + "</b>";
+}
+
+function checkForDumbPost(post) {
+    var text = post.textContent;
+    // ~posters
+    if (text.match("~") != null) {
+        addToName(post, " (dumb ~poster)");
+        return;
+    }
+    // Blancposters
+    if ((text == "" || text == " ") && post.getElementsByTagName("figure").length == 0) {
+        addToName(post, " (dumb Blancposter)");
+        return;
+    }
+    // dumbposterposters
+    if (text.match(/^(?:>>\d* # )*(dumb ?.{0,20}posters?)$/i) != null) {
+        var posterType = text.match(/^(?:>>\d* # )*(dumb ?.{0,20}posters?)$/i)[1];
+        addToName(post, " (dumb '" + posterType + "' poster)");
+        return;
+    }
+    // lowercaseposters
+    var hasUppers = text.match("[A-Z]");
+    if (!hasUppers) {
+        var lowers = findMultipleShitFromAString(text, /[a-z]/g);
+        if (lowers.length >= 5) {
+            addToName(post, " (dumb lowercaseposter)");
+            return;
+        }
+    }
+    addToName(post, "");
+}
+
+function addToName(post, message) {
+    var name = post.parentNode.getElementsByClassName("name spaced")[0];
+    var newText = document.createTextNode(message);
+    newText.id = "dumbposter";
+    if (name.nextSibling.id == "dumbposter") {
+        // already has a name, change it in case the content changed
+        name.parentNode.removeChild(name.nextSibling);
+    }
+    name.parentNode.insertBefore(newText, name.nextSibling);
 }
 
 function setup() {
-	getCurrentOptions();
-	insertCuteIntoCSS();
-	readPostsForRolls();
-	setObservers();
-	hackLatsOptions();
-	if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
+    getCurrentOptions();
+    insertCuteIntoCSS();
+    readPostsForRolls();
+    setObservers();
+    hackLatsOptions();
+    if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
 }
 
 setup();
