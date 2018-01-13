@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.0
+// @version     1.0.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -44,7 +44,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("rouletteOption")) {
-        var rouletteDice = findMultipleShitFromAString(post.innerHTML, /#roulette <strong>#d6 \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
+        var rouletteDice = findMultipleShitFromAString(post.innerHTML, /#roulette <strong>#d[1-6] \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
         for (var j = rouletteDice.length - 1; j >= 0; j--) {
             parseRoulette(post, rouletteDice[j]);
         }
@@ -375,9 +375,9 @@ function checkForDumbPost(post) {
         return;
     }
     // lowercaseposters
-    var hasUppers = text.match("[A-Z]")
+    var hasUppers = text.match("[A-Z]");
     if (!hasUppers) {
-        var lowers = findMultipleShitFromAString(text, /[a-z]/g)
+        var lowers = findMultipleShitFromAString(text, /[a-z]/g);
         if (lowers.length >= 5) {
             addToName(post, " (dumb lowercaseposter)");
             return;
