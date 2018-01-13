@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.0
+// @version     1.0.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -77,10 +77,8 @@ function hackLatsOptions() {
     // flashing duration
     new_cont += "<input type=\"textbox\" name=flashing id=flashing> <label for=flashing>Flashing Duration</label><br>";
 
-    // Extra descriptions for complicated features, you may want to add something here
-    new_cont += "<p>Use <strong>#roulette #d6</strong> to roll the roulette<br>" +
-        "Use <strong>[foo, bar, ...] #dn</strong> to make decisions<br>" +
-        "<p>Refresh for changes to take effect</div>";
+    // Linking to github
+    new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\">How do I use this?</a>";
 
     tab_butts.innerHTML += new_butt;
     tab_cont.innerHTML += new_cont;
@@ -388,8 +386,9 @@ function checkForDumbPost(post) {
 
 function addToName(post, message) {
     var name = post.parentNode.getElementsByClassName("name spaced")[0];
-    var newText = document.createTextNode(message);
+    var newText = document.createElement("B");
     newText.id = "dumbposter";
+    newText.innerHTML = message;
     if (name.nextSibling.id == "dumbposter") {
         // already has a name, change it in case the content changed
         name.parentNode.removeChild(name.nextSibling);
