@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.0.4
+// @version     1.0.5
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -24,6 +24,7 @@ var currentlyEnabledOptions = new Set();
 var flashingDuration = "infinite";
 
 // For most new features, you'll want to put a call to your function in this function
+// This will be called multiple times per post, so handlers should be idempotent
 function handlePost(post) {
     if (currentlyEnabledOptions.has("sharesOption")) {
         var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
@@ -304,9 +305,7 @@ function setObservers() {
 
             var observer2 = new MutationObserver(function(mutations2) {
                 mutations2.forEach(function(mutation2) {
-                    if (mutation2.addedNodes.length > 0) {
-                        handlePost(post);
-                    }
+                    handlePost(post);
                 });
             });
 
@@ -381,8 +380,9 @@ function checkForDumbPost(post) {
         return;
     }
     // dumbposterposters
-    if (text.match(/^(?:>>\d* # )*(dumb ?.{0,20}posters?)$/i) != null) {
-        var posterType = text.match(/^(?:>>\d* # )*(dumb ?.{0,20}posters?)$/i)[1];
+    var blancRegex = /^(?:>>\d* (?:\(You\) )?# )*(dumb ?.{0,20}posters?)$/i;
+    if (text.match(blancRegex) != null) {
+        var posterType = text.match(blancRegex)[1];
         addToName(post, " (dumb '" + posterType + "' poster)");
         return;
     }
