@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @version     1.0
-// @author		  medukasthegucas
+// @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
 
