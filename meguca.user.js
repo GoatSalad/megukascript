@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name        medukatheguca
+// @name        megucascript
 // @namespace   megucasoft
-// @description roll highlighter
+// @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     0.9.2
+// @version     1.0
+// @author		  medukasthegucas
 // @grant       none
 // ==/UserScript==
 
