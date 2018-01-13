@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name        medukatheguca
+// @name        megucascript
 // @namespace   megucasoft
-// @description roll highlighter
+// @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     0.9.2
+// @version     1.0.1
+// @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
 
@@ -43,7 +44,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("rouletteOption")) {
-        var rouletteDice = findMultipleShitFromAString(post.innerHTML, /#roulette <strong>#d6 \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
+        var rouletteDice = findMultipleShitFromAString(post.innerHTML, /#roulette <strong>#d[1-6] \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
         for (var j = rouletteDice.length - 1; j >= 0; j--) {
             parseRoulette(post, rouletteDice[j]);
         }
