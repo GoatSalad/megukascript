@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.0
+// @version     1.0.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -140,49 +140,48 @@ function parseRoll(post, die) {
     var n = die[1];
     var m = die[2];
     var x = die[3];
-    var divided = (""+x).split(""); //Splits the number into single digits to check for dubs, trips, etc
-    if (n == "") {
-        n = 1;
-    }
 
-    var maxRoll = n * m; // because javascript just lets you multiply strings together...
     var before = post.innerHTML.substring(0, die.index);
     var after = post.innerHTML.substring(die.index + die[0].length);
-
-    // do nothing for totals below 10, or for n d1s
-    if (maxRoll < 10 || m == 1) {
-        return;
+    
+    var rollHTML = getRollHTML(n, m, x);
+    if (rollHTML != "") {
+        post.innerHTML = before + rollHTML + die[0].substring(8) + after;
     }
+}
 
-    if (n == 1 && m == x && x == 7777) { // Marrying navy-tan!
-        var rollHTML = "<strong class=\"rainbow_roll\"> Congrats! You get to marry navy-tan! " + die[0].substring(8);
-        post.innerHTML = before + rollHTML + after;
-    } else if (maxRoll == x) {
-        var rollHTML = "<strong class=\"super_roll\"> " + die[0].substring(8);
-        post.innerHTML = before + rollHTML + after;
-    } else if (x == 1) {
-        var rollHTML = "<strong class=\"kuso_roll\"> " + die[0].substring(8);
-        post.innerHTML = before + rollHTML + after;
-    } else if (x == 69 || x == 6969) {
-        var rollHTML = "<strong class=\"lewd_roll\"> " + die[0].substring(8);
-        post.innerHTML = before + rollHTML + after;
+function getRollHTML(numberOfDice, facesPerDie, result) {
+    var divided = (""+result).split(""); //Splits the number into single digits to check for dubs, trips, etc
+    if (numberOfDice == "") {
+        numberOfDice = 1;
+    }
+    var maxRoll = numberOfDice * facesPerDie; // because javascript just lets you multiply strings together...
+    // do nothing for totals below 10, or for n d1s
+    if (maxRoll < 10 || facesPerDie == 1) {
+        return "";
+    }
+    
+    if (numberOfDice == 1 && facesPerDie == result && result == 7777) { // Marrying navy-tan!
+        return "<strong class=\"rainbow_roll\">Congrats! You get to marry navy-tan! ";
+    } else if (maxRoll == result) {
+        return "<strong class=\"super_roll\">";
+    } else if (result == 1) {
+        return "<strong class=\"kuso_roll\">";
+    } else if (result == 69 || result == 6969) {
+        return "<strong class=\"lewd_roll\">";
     } else if (checkEm(divided)) {
         switch (divided.length) {
             case 2:
-                var rollHTML = "<strong class=\"dubs_roll\"> " + die[0].substring(8);
-                break;
+                return "<strong class=\"dubs_roll\">";
             case 3:
-                var rollHTML = "<strong class=\"trips_roll\"> " + die[0].substring(8);
-                break;
+                return "<strong class=\"trips_roll\">";
             case 4:
-                var rollHTML = "<strong class=\"quads_roll\"> " + die[0].substring(8);
-                break;
+                return "<strong class=\"quads_roll\">";
             default: // QUINTS!!!
-                var rollHTML = "<strong class=\"rainbow_roll\"> " + die[0].substring(8);
-                break;
+                return "<strong class=\"rainbow_roll\">";
         }
-        post.innerHTML = before + rollHTML + after;
     }
+    return "";
 }
 
 function parseRoulette(post, die) {
@@ -229,7 +228,8 @@ function parseDecide(post, decide) {
 
 function parseShares(post, shares) {
     var options = shares[1].split(",");
-    var n = shares[2]; //Skipping [3] (amount of faces on die), since we just need to know which roll value was highest.
+    var n = shares[2];
+    var maxShares = shares[3];
     var shareValues = shares[4].split(" + ");
     for (var j = 0; j < shareValues.length; j++) {
         shareValues[j] = Number(shareValues[j]); //Because FUCK YOU FUCKING JAVASCRIPT END YOURSELF YOU SHIT AAAAAAAAAAAAAAAA FUCK
@@ -242,10 +242,24 @@ function parseShares(post, shares) {
     if (options.length != n || n == 1) return;
 
     for (var j = 0; j < shareValues.length; j++) {
+        var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
+        var formattedRoll = " (" + shareValues[j] + "/" + maxShares + ")";
+        
+        // format the dice if needed
+        if (rollHTML != "") {
+            if (shareValues[j] == highestValue) {
+                // if the roll was formatted, the winning share format needs to be continued after the roll
+                formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
+            } else {
+                formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong>)";
+            }
+        }
+        
+        // format the options
         if (shareValues[j] == highestValue) {
-            options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + " (" + shareValues[j] + ")</strong><strong>";
+            options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
         } else {
-            options[j] = options[j] + " (" + shareValues[j] + ")";
+            options[j] = options[j] + formattedRoll;
         }
     }
     var newInner = options.join("<br>");
