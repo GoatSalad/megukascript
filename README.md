@@ -39,4 +39,4 @@ Call the function with <b>[option1, option2, ...] #ndx </b>
 </details>
 
 ## Installation
-Install the Greasemonkey/Tampermonkey extension depending on your browser and [click here](meguca.user.js), then click on 'Raw' to install.
+Install the Greasemonkey/Tampermonkey extension depending on your browser and [click here](../../raw/master/meguca.user.js)
