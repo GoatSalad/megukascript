@@ -3,7 +3,7 @@ Userscript for the meguca imageboard <br />
 No buttcoin miners (yet!)
 
 ## Features
-A quick demonstration of various features https://comfy.moe/tawdnt.webm <br />
+<a href="https://comfy.moe/tawdnt.webm">A quick demonstration of various features</a>  <br />
 All of the features can be disabled invidually in the options panel. You need to refresh your browser to see the changes.
 <details><summary>Animated rolls</summary>
 Adds animation to max rolls and any repeating digits. <br /> 
