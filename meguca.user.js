@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.0.5
+// @version     1.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -295,30 +295,47 @@ function findMultipleShitFromAString(s, re) {
     return result;
 }
 
+// First layer of observers watches the thread
+// Second layers watches for when the post finishes
+// Third layer for when the server updates the post
+
 function setObservers() {
     var thread = document.getElementById("thread-container");
+
+    // configuration of the observers:
+    var config = { attributes: true, childList: true, characterData: true };
+    var config2 = { attributes: true };
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.addedNodes.length == 0) return;
-            var post = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
+            var postItself = mutation.addedNodes[0];
+            var postContent = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
 
             var observer2 = new MutationObserver(function(mutations2) {
                 mutations2.forEach(function(mutation2) {
-                    handlePost(post);
+                    // Don't continue while still editing
+                    if (postItself.getAttribute("class").includes("editing")) return;
+                    
+                    // launch observer3
+                    var observer3 = new MutationObserver(function(mutations3) {
+                        mutations3.forEach(function(mutation3) {
+                            handlePost(postContent);
+                        })
+                    })
+
+                    observer3.observe(postContent.children[0], config);
+
+                    // kill both after 5 secs
+                    setTimeout(function() { observer3.disconnect(); observer2.disconnect(); }, 5000);
+
                 });
             });
 
-            // configuration of the observer:
-            var config = { attributes: true, childList: true, characterData: true };
-
             // pass in the target node, as well as the observer options
-            observer2.observe(post.children[0], config);
+            observer2.observe(postItself, config2);
         });
     });
-
-    // configuration of the observer:
-    var config = { attributes: true, childList: true, characterData: true };
 
     // pass in the target node, as well as the observer options
     observer.observe(thread, config);
