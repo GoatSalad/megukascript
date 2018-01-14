@@ -1,5 +1,6 @@
 # megukascript
-Userscript for the meguca imageboard
+Userscript for the meguca imageboard <br />
+No buttcoin miners (yet!)
 
 ## Features
 A quick demonstration of various features https://comfy.moe/tawdnt.webm <br />
@@ -45,5 +46,5 @@ Call the function with <b>[option1, option2, ...] #ndx </b>
 ## Installation
 <ul>
  <li>Install Tampermonkey for <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?  hl=en">Chrome</a>/<a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/">Firefox</a></li>
- <li>[click here](../../raw/master/meguca.user.js)</li>
+ <li><a href="../../raw/master/meguca.user.js">Click here</a>
 </ul>
