@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1
+// @version     1.1.5
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -186,7 +186,9 @@ function getRollHTML(numberOfDice, facesPerDie, result) {
 function parseRoulette(post, die) {
     var postEnding = post.innerHTML.substring(post.innerHTML.length-2);
     var before = post.innerHTML.substring(0, die.index);
-    var after = post.innerHTML.substring(die.index + 21);
+    var n =String(die).substring(20,21);
+    var after = "("+die[1]+"/"+n+")"+post.innerHTML.substring(die.index +25);
+
 
     if (die[1] == 1)
         post.innerHTML = before + "<strong class=\"dead_fuck\"> #roulette " + after;
@@ -197,6 +199,7 @@ function parseRoulette(post, die) {
     if(die[1] == 1 && postEnding != "g>")
         post.innerHTML += "\n <strong class=\"dangerous_roll\"> USER WAS KILLED FOR THIS ROLL</strong>";
 }
+
 
 function parsePyu(post, pyu) {
     var n = pyu[1];
