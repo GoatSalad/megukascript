@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1.6
+// @version     1.1.7
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -16,6 +16,7 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["rouletteOption", "Roulette"],
                       ["decideOption", "Decision Coloring"],
                       ["dumbPosters", "Dumb xposters"],
+                      ["dumbblanc", "dumb blancposters, not cute"],
                       ["sharesOption", "Shares Formatting"]];
 
 // The current settings (will be loaded before other methods are called)
@@ -398,7 +399,8 @@ function checkForDumbPost(post) {
     }
     // Blancposters
     if ((text == "" || text == " ") && post.getElementsByTagName("figure").length == 0) {
-        addToName(post, " (dumb Blancposter)");
+        var quality = (currentlyEnabledOptions.has("dumbblanc")) ? "dumb" : "cute";
+        addToName(post, " (" + quality + " blancposter)");
         return;
     }
     // dumbposterposters
