@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1.5
+// @version     1.1.6
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -142,7 +142,7 @@ function parseRoll(post, die) {
 
     var before = post.innerHTML.substring(0, die.index);
     var after = post.innerHTML.substring(die.index + die[0].length);
-    
+
     var rollHTML = getRollHTML(n, m, x);
     if (rollHTML != "") {
         post.innerHTML = before + rollHTML + die[0].substring(8) + after;
@@ -159,7 +159,7 @@ function getRollHTML(numberOfDice, facesPerDie, result) {
     if (maxRoll < 10 || facesPerDie == 1) {
         return "";
     }
-    
+
     if (numberOfDice == 1 && facesPerDie == result && result == 7777) { // Marrying navy-tan!
         return "<strong class=\"rainbow_roll\">Congrats! You get to marry navy-tan! ";
     } else if (maxRoll == result) {
@@ -246,7 +246,7 @@ function parseShares(post, shares) {
     for (var j = 0; j < shareValues.length; j++) {
         var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
         var formattedRoll = " (" + shareValues[j] + "/" + maxShares + ")";
-        
+
         // format the dice if needed
         if (rollHTML != "") {
             if (shareValues[j] == highestValue) {
@@ -256,7 +256,7 @@ function parseShares(post, shares) {
                 formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong>)";
             }
         }
-        
+
         // format the options
         if (shareValues[j] == highestValue) {
             options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
@@ -319,13 +319,15 @@ function setObservers() {
                 mutations2.forEach(function(mutation2) {
                     // Don't continue while still editing
                     if (postItself.getAttribute("class").includes("editing")) return;
-                    
-                    // launch observer3
+                    // handlesPost (works for others posters)
+                    handlePost(postContent);
+
+                    // launch observer3 (only works for own posts)
                     var observer3 = new MutationObserver(function(mutations3) {
                         mutations3.forEach(function(mutation3) {
                             handlePost(postContent);
-                        })
-                    })
+                        });
+                    });
 
                     observer3.observe(postContent.children[0], config);
 
