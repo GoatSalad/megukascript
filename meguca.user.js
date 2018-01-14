@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1.7
+// @version     1.1.8
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -80,7 +80,7 @@ function hackLatsOptions() {
     new_cont += "<input type=\"textbox\" name=flashing id=flashing> <label for=flashing>Flashing Duration</label><br>";
 
     // Linking to github
-    new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\">How do I use this?</a>";
+    new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
     tab_butts.innerHTML += new_butt;
     tab_cont.innerHTML += new_cont;

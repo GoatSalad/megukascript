@@ -33,6 +33,10 @@ Identifies dumb posters. <br />
 Currently supports dumb blancposters, dumb tildeposters, dumb lowercaseposters and dumb 'dumb xposters' posters.
 </details>
 
+<details><summary>dumb blancposters, not cute</summary>
+Toggles between tagging blancposters as dumb or cute.
+</details>
+
 <details><summary>Shares formatting</summary>
 Allows for 'share rolls' formatting. Giving multiple choices and highlighting the highest roll. <br />
 Call the function with <b>[option1, option2, ...] #ndx </b>  
