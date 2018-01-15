@@ -28,7 +28,7 @@ var flashingDuration = "infinite";
 // This will be called multiple times per post, so handlers should be idempotent
 function handlePost(post) {
     if (currentlyEnabledOptions.has("sharesOption")) {
-        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
+        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
         for (var j = shares.length - 1; j >= 0; j--) {
             parseShares(post, shares[j]);
         }
@@ -240,9 +240,9 @@ function parseDecide(post, decide) {
 
 function parseShares(post, shares) {
     var options = shares[1].split(",");
-    var n = shares[2];
-    var maxShares = shares[3];
-    var shareValues = shares[4].split(" + ");
+    var n = shares[3];
+    var maxShares = shares[4];
+    var shareValues = shares[5].split(" + ");
     for (var j = 0; j < shareValues.length; j++) {
         shareValues[j] = Number(shareValues[j]); //Because FUCK YOU FUCKING JAVASCRIPT END YOURSELF YOU SHIT AAAAAAAAAAAAAAAA FUCK
     }
