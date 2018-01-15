@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1.8
+// @version     1.2
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -117,6 +117,10 @@ function insertCuteIntoCSS() {
         ".dangerous_roll {font-size: 110%; color: #f00000; }" +
         ".dead_fuck { color: #e55e5e; }" +
         ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
+        ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes planeptune_blinker { 50% { color: mediumpurple} }"+
+        ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes lastation_blinker { 50% { color: #333} }"+
+        ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes lowee_blinker { 50% { color: #e6e6ff }}"+
+        ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes leanbox_blinker { 50% { color: #4dff4d} }"+
         ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }";
     document.head.appendChild(css);
 }
@@ -247,12 +251,22 @@ function parseShares(post, shares) {
     for (var j = 0; j < shareValues.length; j++) {
         var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
         var formattedRoll = " (" + shareValues[j] + "/" + maxShares + ")";
-
         // format the dice if needed
         if (rollHTML != "") {
             if (shareValues[j] == highestValue) {
+
                 // if the roll was formatted, the winning share format needs to be continued after the roll
-                formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
+                if(options[j]=="Planeptune"){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"planeptune_wins\">)</strong><strong>";
+                }else if(options[j]=="Lastation"){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lastation_wins\">)</strong><strong>";
+                }else if(options[j]=="Lowee"){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lowee_wins\">)</strong><strong>";
+                }else if(options[j]=="Leanbox"){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"leanbox_wins\">)</strong><strong>";
+                }else{
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
+                }
             } else {
                 formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong>)";
             }
@@ -260,7 +274,17 @@ function parseShares(post, shares) {
 
         // format the options
         if (shareValues[j] == highestValue) {
-            options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
+            if(options[j]=="Planeptune"){
+                options[j] = "</strong><strong class=\"planeptune_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j]=="Lastation"){
+                options[j] = "</strong><strong class=\"lastation_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j]=="Lowee"){
+                options[j] = "</strong><strong class=\"lowee_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j]=="Leanbox"){
+                options[j] = "</strong><strong class=\"leanbox_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else{
+                options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
+            }
         } else {
             options[j] = options[j] + formattedRoll;
         }
@@ -422,16 +446,16 @@ function checkForDumbPost(post) {
     addToName(post, "");
 }
 
- function addToName(post, message) {
-      var name = post.parentNode.getElementsByClassName("name spaced")[0];
-      var newText = document.createTextNode(message);
-      newText.id = "dumbposter";
-      if (name.nextSibling.id == "dumbposter") {
-          // already has a name, change it in case the content changed
-          name.parentNode.removeChild(name.nextSibling);
-     }
-     name.parentNode.insertBefore(newText, name.nextSibling);
- }
+function addToName(post, message) {
+    var name = post.parentNode.getElementsByClassName("name spaced")[0];
+    var newText = document.createTextNode(message);
+    newText.id = "dumbposter";
+    if (name.nextSibling.id == "dumbposter") {
+        // already has a name, change it in case the content changed
+        name.parentNode.removeChild(name.nextSibling);
+    }
+    name.parentNode.insertBefore(newText, name.nextSibling);
+}
 
 function setup() {
     getCurrentOptions();
