@@ -52,7 +52,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("decideOption")) {
-        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^\]\[]*)\] <strong>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
         for (var j = decide.length - 1; j >= 0; j--) {
             parseDecide(post, decide[j]);
         }
