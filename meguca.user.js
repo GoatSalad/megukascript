@@ -52,7 +52,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("decideOption")) {
-        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^\]\[]*)\] <strong>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
         for (var j = decide.length - 1; j >= 0; j--) {
             parseDecide(post, decide[j]);
         }
@@ -216,8 +216,8 @@ function parsePyu(post, pyu) {
 
 function parseDecide(post, decide) {
     var options = decide[1].split(",");
-    var n = decide[2];
-    var m = decide[3];
+    var n = decide[3];
+    var m = decide[4];
 
     var before = post.innerHTML.substring(0, decide.index);
     var after = post.innerHTML.substring(decide.index + decide[0].length);
@@ -225,7 +225,12 @@ function parseDecide(post, decide) {
     if (options.length != n || n == 1) return;
     options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
     var newInner = options.toString();
-    var retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+    var retreivedRoll;
+    if (decide[2] == null) {
+        retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+    } else {
+        retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
+    }
     post.innerHTML = before + newInner + retreivedRoll + after;
 }
 
