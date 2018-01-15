@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.3.1
+// @version     1.3.2
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -259,15 +259,14 @@ function parseShares(post, shares) {
         // format the dice if needed
         if (rollHTML != "") {
             if (shareValues[j] == highestValue) {
-
                 // if the roll was formatted, the winning share format needs to be continued after the roll
-                if(options[j]=="Planeptune"){
+                if(options[j].match(/(^|\W)planeptune($|\W)(?!\w)/i)){
                     formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"planeptune_wins\">)</strong><strong>";
-                }else if(options[j]=="Lastation"){
+                }else if(options[j].match(/(^|\W)lastation($|\W)(?!\w)/i)){
                     formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lastation_wins\">)</strong><strong>";
-                }else if(options[j]=="Lowee"){
+                }else if(options[j].match(/(^|\W)lowee($|\W)(?!\w)/i)){
                     formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lowee_wins\">)</strong><strong>";
-                }else if(options[j]=="Leanbox"){
+                }else if(options[j].match(/(^|\W)leanbox($|\W)(?!\w)/i)){
                     formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"leanbox_wins\">)</strong><strong>";
                 }else{
                     formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
@@ -279,13 +278,13 @@ function parseShares(post, shares) {
 
         // format the options
         if (shareValues[j] == highestValue) {
-            if(options[j]=="Planeptune"){
+            if(options[j].match(/(^|\W)planeptune($|\W)(?!\w)/i)){
                 options[j] = "</strong><strong class=\"planeptune_wins\">" + options[j] + formattedRoll + "</strong><strong>";
-            }else if(options[j]=="Lastation"){
+            }else if(options[j].match(/(^|\W)lastation($|\W)(?!\w)/i)){
                 options[j] = "</strong><strong class=\"lastation_wins\">" + options[j] + formattedRoll + "</strong><strong>";
-            }else if(options[j]=="Lowee"){
+            }else if(options[j].match(/(^|\W)lowee($|\W)(?!\w)/i)){
                 options[j] = "</strong><strong class=\"lowee_wins\">" + options[j] + formattedRoll + "</strong><strong>";
-            }else if(options[j]=="Leanbox"){
+            }else if(options[j].match(/(^|\W)leanbox($|\W)(?!\w)/i)){
                 options[j] = "</strong><strong class=\"leanbox_wins\">" + options[j] + formattedRoll + "</strong><strong>";
             }else{
                 options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
