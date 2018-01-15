@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.3.2
+// @version     1.3.3
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -432,15 +432,21 @@ function checkForDumbPost(post) {
         return;
     }
     // dumbposterposters
-    var blancRegex = /^(?:>>\d* (?:\(You\) )?# )*(dumb ?.{0,20}posters?)$/i;
-    if (text.match(blancRegex) != null) {
-        var posterType = text.match(blancRegex)[1];
+    var dumbRegex = /^(?:>>\d* (?:\(You\) )?# )*(dumb ?.{0,20}posters?)$/i;
+    if (text.match(dumbRegex) != null) {
+        var posterType = text.match(dumbRegex)[1];
         addToName(post, " (dumb '" + posterType + "' poster)");
         return;
     }
+    // wait anon
+    if (text.match(/^(?:>>\d* (?:\(You\) )?# )*wait anon$/i) != null) {
+        addToName(post, " (Dumb haiku poster / 'wait anon' is all she says / Don't wait, run away!)");
+        return;
+    }
     // lowercaseposters
-    var hasUppers = text.match("[A-Z]");
-    if (!hasUppers) {
+    var uppers = findMultipleShitFromAString(text, /[A-Z]/g);
+    var Yous = findMultipleShitFromAString(text, />>\d* \(You\)/g);
+    if (uppers.length == Yous.length) {
         var lowers = findMultipleShitFromAString(text, /[a-z]/g);
         if (lowers.length >= 5) {
             addToName(post, " (dumb lowercaseposter)");
