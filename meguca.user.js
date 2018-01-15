@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.3
+// @version     1.3.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -117,10 +117,10 @@ function insertCuteIntoCSS() {
         ".dangerous_roll {font-size: 110%; color: #f00000; }" +
         ".dead_fuck { color: #e55e5e; }" +
         ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
-        ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes planeptune_blinker { 50% { color: mediumpurple} }"+
-        ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes lastation_blinker { 50% { color: #333} }"+
-        ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes lowee_blinker { 50% { color: #e6e6ff }}"+
-        ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #fff; } @keyframes leanbox_blinker { 50% { color: #4dff4d} }"+
+        ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: mediumpurple; } @keyframes planeptune_blinker { 50% { color: #fff} }"+
+        ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
+        ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
+        ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
         ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }";
     document.head.appendChild(css);
 }
