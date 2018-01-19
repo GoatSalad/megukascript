@@ -251,7 +251,7 @@ function parseShares(post, shares) {
     var after = post.innerHTML.substring(shares.index + shares[0].length);
     var highestValue = Math.max.apply(Math, shareValues);
 
-    if (options.length != n || n == 1) return;
+    if (options.length != n || n == 1 || n == 0) return;
 
     for (var j = 0; j < shareValues.length; j++) {
         var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
