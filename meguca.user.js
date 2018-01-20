@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4
+// @version     1.4.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -24,7 +24,7 @@ const onOffOptions = [["diceOption", "Dice coloring"],
 var currentlyEnabledOptions = new Set();
 // Add custom options here if needed
 var flashingDuration = "infinite";
-var vibrationDuration = 10;
+var vibrationDuration = 20;
 
 // For most new features, you'll want to put a call to your function in this function
 // This will be called multiple times per post, so handlers should be idempotent
@@ -489,8 +489,12 @@ function checkForScreamingPost(post) {
     var text = post.textContent;
     var wholePost = post.parentElement
 
+    // Remove (Yous and spaces)
+    text = text.replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/\s/, "");
+
+    var isBlanc = (text.length == 0);
     var hasLower = text.match("[a-z]");
-    if (!hasLower && !wholePost.className.match("shaking_post")) {
+    if (!isBlanc && !hasLower && !wholePost.className.match("shaking_post")) {
         wholePost.className += " shaking_post";
     }
 }
