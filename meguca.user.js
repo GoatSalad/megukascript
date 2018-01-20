@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4.2
+// @version     1.4.3
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -494,7 +494,7 @@ function checkForScreamingPost(post) {
 
     var isBlanc = (text.length == 0);
     var hasLower = text.match("[a-z]");
-    var isShort = (text.length < 5);
+    var isShort = (text.length <= 5);
     if (!isShort && !isBlanc && !hasLower && !wholePost.className.match("shaking_post")) {
         wholePost.className += " shaking_post";
     }
