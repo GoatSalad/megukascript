@@ -17,7 +17,8 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["decideOption", "Decision Coloring"],
                       ["dumbPosters", "Dumb xposters"],
                       ["dumbblanc", "dumb blancposters, not cute"],
-                      ["sharesOption", "Shares Formatting"]];
+                      ["sharesOption", "Shares Formatting"],
+                      ["screamingPosters", "Vibrate screaming posts"]];
 
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
@@ -59,6 +60,9 @@ function handlePost(post) {
     }
     if (currentlyEnabledOptions.has("dumbPosters")) {
         checkForDumbPost(post);
+    }
+    if (currentlyEnabledOptions.has("screamingPosters")) {
+        checkForScreamingPost(post);
     }
 }
 
@@ -422,16 +426,25 @@ function checkForDumbPost(post) {
     addToName(post, "");
 }
 
- function addToName(post, message) {
-      var name = post.parentNode.getElementsByClassName("name spaced")[0];
-      var newText = document.createTextNode(message);
-      newText.id = "dumbposter";
-      if (name.nextSibling.id == "dumbposter") {
-          // already has a name, change it in case the content changed
-          name.parentNode.removeChild(name.nextSibling);
-     }
-     name.parentNode.insertBefore(newText, name.nextSibling);
- }
+function checkForScreamingPost(post) {
+    var text = post.textContent;
+
+    var hasLower = text.match("[a-z]");
+    if (!hasLower) {
+        console.log(post);
+    }
+}
+
+function addToName(post, message) {
+    var name = post.parentNode.getElementsByClassName("name spaced")[0];
+    var newText = document.createTextNode(message);
+    newText.id = "dumbposter";
+    if (name.nextSibling.id == "dumbposter") {
+        // already has a name, change it in case the content changed
+        name.parentNode.removeChild(name.nextSibling);
+    }
+    name.parentNode.insertBefore(newText, name.nextSibling);
+}
 
 function setup() {
     getCurrentOptions();
