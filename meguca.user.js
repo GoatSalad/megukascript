@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.1.8
+// @version     1.3.3
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -29,7 +29,7 @@ var flashingDuration = "infinite";
 // This will be called multiple times per post, so handlers should be idempotent
 function handlePost(post) {
     if (currentlyEnabledOptions.has("sharesOption")) {
-        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
+        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
         for (var j = shares.length - 1; j >= 0; j--) {
             parseShares(post, shares[j]);
         }
@@ -53,7 +53,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("decideOption")) {
-        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^\]\[]*)\] <strong>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
         for (var j = decide.length - 1; j >= 0; j--) {
             parseDecide(post, decide[j]);
         }
@@ -121,6 +121,10 @@ function insertCuteIntoCSS() {
         ".dangerous_roll {font-size: 110%; color: #f00000; }" +
         ".dead_fuck { color: #e55e5e; }" +
         ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
+        ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: mediumpurple; } @keyframes planeptune_blinker { 50% { color: #fff} }"+
+        ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
+        ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
+        ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
         ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }";
     document.head.appendChild(css);
 }
@@ -220,8 +224,8 @@ function parsePyu(post, pyu) {
 
 function parseDecide(post, decide) {
     var options = decide[1].split(",");
-    var n = decide[2];
-    var m = decide[3];
+    var n = decide[3];
+    var m = decide[4];
 
     var before = post.innerHTML.substring(0, decide.index);
     var after = post.innerHTML.substring(decide.index + decide[0].length);
@@ -229,15 +233,20 @@ function parseDecide(post, decide) {
     if (options.length != n || n == 1) return;
     options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
     var newInner = options.toString();
-    var retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+    var retreivedRoll;
+    if (decide[2] == null) {
+        retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+    } else {
+        retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
+    }
     post.innerHTML = before + newInner + retreivedRoll + after;
 }
 
 function parseShares(post, shares) {
     var options = shares[1].split(",");
-    var n = shares[2];
-    var maxShares = shares[3];
-    var shareValues = shares[4].split(" + ");
+    var n = shares[3];
+    var maxShares = shares[4];
+    var shareValues = shares[5].split(" + ");
     for (var j = 0; j < shareValues.length; j++) {
         shareValues[j] = Number(shareValues[j]); //Because FUCK YOU FUCKING JAVASCRIPT END YOURSELF YOU SHIT AAAAAAAAAAAAAAAA FUCK
     }
@@ -246,17 +255,26 @@ function parseShares(post, shares) {
     var after = post.innerHTML.substring(shares.index + shares[0].length);
     var highestValue = Math.max.apply(Math, shareValues);
 
-    if (options.length != n || n == 1) return;
+    if (options.length != n || n == 1 || n == 0) return;
 
     for (var j = 0; j < shareValues.length; j++) {
         var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
         var formattedRoll = " (" + shareValues[j] + "/" + maxShares + ")";
-
         // format the dice if needed
         if (rollHTML != "") {
             if (shareValues[j] == highestValue) {
                 // if the roll was formatted, the winning share format needs to be continued after the roll
-                formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
+                if(options[j].match(/(^|\W)planeptune($|\W)(?!\w)/i)){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"planeptune_wins\">)</strong><strong>";
+                }else if(options[j].match(/(^|\W)lastation($|\W)(?!\w)/i)){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lastation_wins\">)</strong><strong>";
+                }else if(options[j].match(/(^|\W)lowee($|\W)(?!\w)/i)){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lowee_wins\">)</strong><strong>";
+                }else if(options[j].match(/(^|\W)leanbox($|\W)(?!\w)/i)){
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"leanbox_wins\">)</strong><strong>";
+                }else{
+                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
+                }
             } else {
                 formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong>)";
             }
@@ -264,7 +282,17 @@ function parseShares(post, shares) {
 
         // format the options
         if (shareValues[j] == highestValue) {
-            options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
+            if(options[j].match(/(^|\W)planeptune($|\W)(?!\w)/i)){
+                options[j] = "</strong><strong class=\"planeptune_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j].match(/(^|\W)lastation($|\W)(?!\w)/i)){
+                options[j] = "</strong><strong class=\"lastation_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j].match(/(^|\W)lowee($|\W)(?!\w)/i)){
+                options[j] = "</strong><strong class=\"lowee_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else if(options[j].match(/(^|\W)leanbox($|\W)(?!\w)/i)){
+                options[j] = "</strong><strong class=\"leanbox_wins\">" + options[j] + formattedRoll + "</strong><strong>";
+            }else{
+                options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
+            }
         } else {
             options[j] = options[j] + formattedRoll;
         }
@@ -408,15 +436,21 @@ function checkForDumbPost(post) {
         return;
     }
     // dumbposterposters
-    var blancRegex = /^(?:>>\d* (?:\(You\) )?# )*(dumb ?.{0,20}posters?)$/i;
-    if (text.match(blancRegex) != null) {
-        var posterType = text.match(blancRegex)[1];
+    var dumbRegex = /^(?:>>\d* (?:\(You\) )?# )*(dumb ?.{0,20}posters?)$/i;
+    if (text.match(dumbRegex) != null) {
+        var posterType = text.match(dumbRegex)[1];
         addToName(post, " (dumb '" + posterType + "' poster)");
         return;
     }
+    // wait anon
+    if (text.match(/^(?:>>\d* (?:\(You\) )?# )*wait anon$/i) != null) {
+        addToName(post, " (Dumb haiku poster / 'wait anon' is all she says / Don't wait, run away!)");
+        return;
+    }
     // lowercaseposters
-    var hasUppers = text.match("[A-Z]");
-    if (!hasUppers) {
+    var uppers = findMultipleShitFromAString(text, /[A-Z]/g);
+    var Yous = findMultipleShitFromAString(text, />>\d* \(You\)/g);
+    if (uppers.length == Yous.length) {
         var lowers = findMultipleShitFromAString(text, /[a-z]/g);
         if (lowers.length >= 5) {
             addToName(post, " (dumb lowercaseposter)");
