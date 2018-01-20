@@ -24,6 +24,7 @@ const onOffOptions = [["diceOption", "Dice coloring"],
 var currentlyEnabledOptions = new Set();
 // Add custom options here if needed
 var flashingDuration = "infinite";
+var vibrationDuration = 10;
 
 // For most new features, you'll want to put a call to your function in this function
 // This will be called multiple times per post, so handlers should be idempotent
@@ -83,6 +84,10 @@ function hackLatsOptions() {
     // flashing duration
     new_cont += "<input type=\"textbox\" name=flashing id=flashing> <label for=flashing>Flashing Duration</label><br>";
 
+    // vibration duration
+    new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
+
+
     // Linking to github
     new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
@@ -105,6 +110,12 @@ function hackLatsOptions() {
     document.getElementById("flashing").onchange = function(){
         localStorage.setItem(this.id, this.value);
     };
+
+    // vibration duration
+    document.getElementById("vibration").value = vibrationDuration;
+    document.getElementById("vibration").onchange = function(){
+        localStorage.setItem(this.id, this.value);
+    };
 }
 
 function insertCuteIntoCSS() {
@@ -125,7 +136,8 @@ function insertCuteIntoCSS() {
         ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
         ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
         ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
-        ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }";
+        ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }"+
+        ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }";
     document.head.appendChild(css);
 }
 
@@ -134,6 +146,13 @@ function getIterations(period) {
         return "infinite";
     }
     return flashingDuration / period;
+}
+
+function getVibrationIterations() {
+    if (vibrationDuration == "infinite") {
+        return "infinite";
+    }
+    return vibrationDuration / 0.5;
 }
 
 function readPostsForRolls() {
@@ -392,6 +411,12 @@ function getCurrentOptions() {
         // assume inifinity if it's not a number
         flashingDuration = "infinite";
     }
+
+    vibrationDuration = parseFloat(localStorage.getItem("vibration"));
+    if (isNaN(vibrationDuration)) {
+        // assume inifinity if it's not a number
+        vibrationDuration = "infinite";
+    }
 }
 
 function setUpEdenBanner() {
@@ -462,10 +487,11 @@ function checkForDumbPost(post) {
 
 function checkForScreamingPost(post) {
     var text = post.textContent;
+    var wholePost = post.parentElement
 
     var hasLower = text.match("[a-z]");
-    if (!hasLower) {
-        console.log(post);
+    if (!hasLower && !wholePost.className.match("shaking_post")) {
+        wholePost.className += " shaking_post";
     }
 }
 
