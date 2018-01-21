@@ -490,7 +490,7 @@ function checkForScreamingPost(post) {
     var wholePost = post.parentElement;
 
     // Remove (references, Yous and spaces)
-    text = text.replace(/(?:>>\d*)/g, "").replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/[\s0-9]/g, "");
+    text = text.replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/(?:>>\d*)/g, "").replace(/[\s0-9]/g, "");
 
     var isBlanc = (text.length == 0);
     var hasLower = text.match("[a-z]");
