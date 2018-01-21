@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4.5
+// @version     1.4.6
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -487,10 +487,10 @@ function checkForDumbPost(post) {
 
 function checkForScreamingPost(post) {
     var text = post.textContent;
-    var wholePost = post.parentElement
+    var wholePost = post.parentElement;
 
     // Remove (references, Yous and spaces)
-    text = text.replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/(?:>>\d*)/g, "").replace(/\s/, "");
+    text = text.replace(/(?:>>\d*)/g, "").replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/[\s0-9]/g, "");
 
     var isBlanc = (text.length == 0);
     var hasLower = text.match("[a-z]");
