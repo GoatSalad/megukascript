@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4.6
+// @version     1.4.8
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -490,7 +490,7 @@ function checkForScreamingPost(post) {
     var wholePost = post.parentElement;
 
     // Remove (references, Yous and spaces)
-    text = text.replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/(?:>>\d*)/g, "").replace(/[\s0-9]/g, "");
+    text = text.replace(/(?:>>\d* (?:\(You\) )?#)/g, "").replace(/(?:>>\d*)/g, "").replace(/[\s\W\d]/g, "");
 
     var isBlanc = (text.length == 0);
     var hasLower = text.match("[a-z]");
