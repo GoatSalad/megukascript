@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4.9
+// @version     1.5
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -18,7 +18,8 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["dumbPosters", "Dumb xposters"],
                       ["dumbblanc", "dumb blancposters, not cute"],
                       ["sharesOption", "Shares Formatting"],
-                      ["screamingPosters", "Vibrate screaming posts"]];
+                      ["screamingPosters", "Vibrate screaming posts"],
+                      ["sekritPosting", "Secret Posting"]];
 
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
@@ -59,6 +60,12 @@ function handlePost(post) {
             parseDecide(post, decide[j]);
         }
     }
+    if (currentlyEnabledOptions.has("sekritPosting")) {
+        var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code>([^#<>\[\]]*)<code class=\"code-tag\"><\/code>/g);
+        for (var j = secret.length - 1; j >= 0; j--) {
+            parseSecretPost(post, secret[j]);
+        }
+    }
     if (currentlyEnabledOptions.has("dumbPosters")) {
         checkForDumbPost(post);
     }
@@ -87,6 +94,8 @@ function hackLatsOptions() {
     // vibration duration
     new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
 
+    // rot13 encode
+    new_cont += "<input type=\"textbox\" name=rot13 id=rot13> <label for=rot13>Encode Text</label> <button type=\"button\" onclick=\"if (document.getElementById('text-input')!=null) {var textToEncode = document.getElementById('rot13').value;var newTextToEncode = textToEncode.replace(/[a-zA-Z]/g,function(c){return String.fromCharCode((c<='Z'?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26);});document.getElementById('rot13').value='';document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````'+newTextToEncode+'````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);}\">Convert & input</button><br>";
 
     // Linking to github
     new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
@@ -100,7 +109,7 @@ function hackLatsOptions() {
         document.getElementById(id).checked = currentlyEnabledOptions.has(id);
 
         // set all the handler functions
-        document.getElementById(id).onchange = function(){
+        document.getElementById(id).onchange = function() {
             localStorage.setItem(this.id, this.checked ? "on" : "off");
         };
     }
@@ -131,6 +140,7 @@ function insertCuteIntoCSS() {
         ".rainbow_roll { animation: rainbow_blinker 2s linear " + getIterations(2) + "; color: red; } @keyframes rainbow_blinker { 14% {color: orange} 28% {color: yellow} 42% {color: green} 57% {color: blue} 71% {color: indigo} 85% {color: violet} }" +
         ".dangerous_roll {font-size: 110%; color: #f00000; }" +
         ".dead_fuck { color: #e55e5e; }" +
+        ".sekrit_text { color: #FFDC91; }" +
         ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
         ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: mediumpurple; } @keyframes planeptune_blinker { 50% { color: #fff} }"+
         ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
@@ -259,6 +269,15 @@ function parseDecide(post, decide) {
         retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
     }
     post.innerHTML = before + newInner + retreivedRoll + after;
+}
+
+function parseSecretPost(post, secret) {
+    var n = secret[1];
+    var before = post.innerHTML.substring(0, secret.index);
+    var after = post.innerHTML.substring(secret.index + secret[0].length);
+    
+    var newSecret = n.replace(/[a-zA-Z]/g,function(c){return String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26);});
+    post.innerHTML = before + "<strong class=\"sekrit_text\">" + newSecret + "</strong>" + after;
 }
 
 function parseShares(post, shares) {
