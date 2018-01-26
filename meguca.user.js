@@ -21,8 +21,6 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["screamingPosters", "Vibrate screaming posts"],
                       ["sekritPosting", "Secret Posting"]];
 
-//const encodedAlphabet = "󠀠󠀡󠀢󠀣󠀤󠀥󠀦󠀧󠀨󠀩󠀪󠀫󠀬󠀭󠀮󠀯󠀰󠀱󠀲󠀳󠀴󠀵󠀶󠀷󠀸󠀹";
-
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
 // Add custom options here if needed
@@ -76,11 +74,6 @@ function handlePost(post) {
     }
 }
 
-function copyEncodeToText(encodedText) {
-    document.getElementById("rot13").value="";
-    console.log(encodedText);
-}
-
 function hackLatsOptions() {
     var options = document.getElementById("options");
     var tab_butts = options.getElementsByClassName("tab-butts")[0];
@@ -102,7 +95,6 @@ function hackLatsOptions() {
     new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
 
     // rot13 encode
-    //new_cont += "<input type=\"textbox\" name=rot13 id=rot13> <label for=rot13>Encode Text</label> <button type=\"button\" onclick=\"copyEncodeToText(document.getElementsByName(\"rot13\")[0].value;)\">Convert & input</button><br>";
     new_cont += "<input type=\"textbox\" name=rot13 id=rot13> <label for=rot13>Encode Text</label> <button type=\"button\" onclick=\"if (document.getElementById('text-input')!=null) {var textToEncode = document.getElementById('rot13').value;var newTextToEncode = textToEncode.replace(/[a-zA-Z]/g,function(c){return String.fromCharCode((c<='Z'?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26);});document.getElementById('rot13').value='';document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````'+newTextToEncode+'````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);}\">Convert & input</button><br>";
 
     // Linking to github
