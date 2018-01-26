@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.5
+// @version     1.5.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -121,8 +121,6 @@ function hackLatsOptions() {
             "           base16 += asciiNum.toString(16);" +
             "       else " +
             "           base16 += '0' + asciiNum.toString(16);" +
-            "   } else {" +
-            "       base16 += textToConvert[j];" +
             "   }" +
             "}" +
             "for (var j = 0; j < encodedAlphabet.length; j++) {" +
