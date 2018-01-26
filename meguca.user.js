@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.4.9
+// @version     1.4.9.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -30,7 +30,7 @@ var vibrationDuration = 20;
 // This will be called multiple times per post, so handlers should be idempotent
 function handlePost(post) {
     if (currentlyEnabledOptions.has("sharesOption")) {
-        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
+        var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[‮]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
         for (var j = shares.length - 1; j >= 0; j--) {
             parseShares(post, shares[j]);
         }
@@ -54,7 +54,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("decideOption")) {
-        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+        var decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[‮]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
         for (var j = decide.length - 1; j >= 0; j--) {
             parseDecide(post, decide[j]);
         }
