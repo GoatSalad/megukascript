@@ -317,9 +317,19 @@ function parseSecretPost(post, secret) {
     var decodedMessage = "";
     for (var j = 0; j < base16.length; j+=2) {
         var twoBits = base16.substring(j, j+2);
-        decodedMessage += String.fromCharCode(parseInt(twoBits, 16));
+        var num = parseInt(twoBits, 16);
+        if (isNaN(num)) {
+            // invalid secret, don't do anything
+            return;
+        }
+        decodedMessage += String.fromCharCode(num);
     }
-    decodedMessage = decodeURIComponent(escape(decodedMessage));
+    try {
+        decodedMessage = decodeURIComponent(escape(decodedMessage));
+    } catch (e) {
+        console.log("invalid secret message: " + base16)
+        return;
+    }
     decodedMessage = decodedMessage.replace(new RegExp("<", 'g'), "<󠁂");
     decodedMessage = decodedMessage.replace(new RegExp(">", 'g'), "󠁂>");
     post.innerHTML = before + "<strong class=\"sekrit_text\">" + decodedMessage + "</strong>" + after;
