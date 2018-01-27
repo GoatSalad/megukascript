@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.5
+// @version     1.5.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -110,28 +110,7 @@ function hackLatsOptions() {
     new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
 
     // hidetext encode
-    new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" onclick=\"" + 
-        "if (document.getElementById('text-input')!=null) {" + "var encodedAlphabet = [['󠁁', '0'],['󠁂', '1'],['󠁃', '2'],['󠁄', '3'],['󠁅', '4'],['󠁆', '5'],['󠁇', '6'],['󠁈', '7'],['󠁉', '8'],['󠁊', '9'],['󠁋', 'a'],['󠁌', 'b'],['󠁍', 'c'],['󠁎', 'd'],['󠁏', 'e'],['󠁐', 'f']];" +
-            "var textToConvert = document.getElementById('hidetext').value;" +
-            "var base16 = '';" +
-            "for (var j = 0; j < textToConvert.length; j++) {" +
-            "   var asciiNum = textToConvert[j].charCodeAt();" +
-            "   if (asciiNum <= 255) {" +
-            "       if (asciiNum.toString(16).length == 2)" +
-            "           base16 += asciiNum.toString(16);" +
-            "       else " +
-            "           base16 += '0' + asciiNum.toString(16);" +
-            "   } else {" +
-            "       base16 += textToConvert[j];" +
-            "   }" +
-            "}" +
-            "for (var j = 0; j < encodedAlphabet.length; j++) {" +
-            "   base16 = base16.replace(new RegExp(encodedAlphabet[j][1], 'g'), encodedAlphabet[j][0]);" +
-            "}" +
-            "document.getElementById('hidetext').value='';" +
-            "document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````' + base16 + '````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);" +
-            "var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);" +
-        "}\">Convert & input</button><br>";
+    new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
 
     // Linking to github
     new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
@@ -160,6 +139,26 @@ function hackLatsOptions() {
     document.getElementById("vibration").value = vibrationDuration;
     document.getElementById("vibration").onchange = function(){
         localStorage.setItem(this.id, this.value);
+    };
+    
+    document.getElementById("secretButton").onclick = function(){
+        if (document.getElementById('text-input')!=null) {
+            var textToConvert = unescape(encodeURIComponent(document.getElementById('hidetext').value));
+            var base16 = '';
+            for (var j = 0; j < textToConvert.length; j++) {
+                var asciiNum = textToConvert[j].charCodeAt();
+                if (asciiNum >= 16)
+                    base16 += asciiNum.toString(16);
+                else
+                    base16 += '0' + asciiNum.toString(16);
+            }
+            for (var j = 0; j < encodedAlphabet.length; j++) {
+                base16 = base16.replace(new RegExp(encodedAlphabet[j][1], 'g'), encodedAlphabet[j][0]);
+            }
+            document.getElementById('hidetext').value='';
+            document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````' + base16 + '````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
+            var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
+        }
     };
 }
 
@@ -318,7 +317,18 @@ function parseSecretPost(post, secret) {
     var decodedMessage = "";
     for (var j = 0; j < base16.length; j+=2) {
         var twoBits = base16.substring(j, j+2);
-        decodedMessage += String.fromCharCode(parseInt(twoBits, 16));
+        var num = parseInt(twoBits, 16);
+        if (isNaN(num)) {
+            // invalid secret, don't do anything
+            return;
+        }
+        decodedMessage += String.fromCharCode(num);
+    }
+    try {
+        decodedMessage = decodeURIComponent(escape(decodedMessage));
+    } catch (e) {
+        console.log("invalid secret message: " + base16)
+        return;
     }
     decodedMessage = decodedMessage.replace(new RegExp("<", 'g'), "<󠁂");
     decodedMessage = decodedMessage.replace(new RegExp(">", 'g'), "󠁂>");
