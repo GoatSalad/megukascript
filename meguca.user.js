@@ -64,6 +64,10 @@ function handlePost(post) {
         for (var j = secret.length - 1; j >= 0; j--) {
             parseSecretPost(post, secret[j]);
         }
+        var secretQuote = findMultipleShitFromAString(post.innerHTML, /[ >]󠁂&gt;󠁂&gt;([\d]+)(?:[ <]+)/g);
+        for (var j = secretQuote.length - 1; j >= 0; j--) {
+            parseSecretQuote(post, secretQuote[j]);
+        }
     }
     if (currentlyEnabledOptions.has("dumbPosters")) {
         checkForDumbPost(post);
@@ -293,7 +297,19 @@ function parseSecretPost(post, secret) {
     }
     decodedMessage = decodedMessage.replace(new RegExp("<", 'g'), "<󠁂");
     decodedMessage = decodedMessage.replace(new RegExp(">", 'g'), "󠁂>");
-    post.innerHTML = before + "<strong class=\"sekrit_text\">" + decodedMessage + "</strong>" + after;
+    post.innerHTML = before + "<h class=\"sekrit_text\">" + decodedMessage + "</h>" + after;
+}
+
+function parseSecretQuote(post, secretQuote) {
+    var quote = secretQuote[1];
+    var before2 = post.innerHTML.substring(0, secretQuote.index);
+    var after2 = post.innerHTML.substring(secretQuote.index + secretQuote[0].length);
+    if (secretQuote[0].substring(secretQuote[0].length-1) == "<" || secretQuote[0].substring(secretQuote[0].length-1) == " ") {
+        after2 = secretQuote[0].substring(secretQuote[0].length-1) + after2;
+        secretQuote[0] = secretQuote[0].substring(0,secretQuote[0].length-1);
+    }
+    quote = "<a class=\"post-link\" data-id=\"" + quote + "\" href=\"#p" + quote + "\">&gt;&gt;" + quote + "</a><a class=\"hash-link\" href=\"#p" + quote + "\"> #</a>";
+    post.innerHTML = before2 + " </h>" + quote + "<h class=sekrit_text> " + after2;
 }
 
 function parseShares(post, shares) {
