@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.5.2
+// @version     1.6
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -20,22 +20,6 @@ const onOffOptions = [["diceOption", "Dice coloring"],
                       ["sharesOption", "Shares Formatting"],
                       ["screamingPosters", "Vibrate screaming posts"],
                       ["sekritPosting", "Secret Posting"]];
-const encodedAlphabet = [["󠁁", "0"],
-                        ["󠁂", "1"],
-                        ["󠁃", "2"],
-                        ["󠁄", "3"],
-                        ["󠁅", "4"],
-                        ["󠁆", "5"],
-                        ["󠁇", "6"],
-                        ["󠁈", "7"],
-                        ["󠁉", "8"],
-                        ["󠁊", "9"],
-                        ["󠁋", "a"],
-                        ["󠁌", "b"],
-                        ["󠁍", "c"],
-                        ["󠁎", "d"],
-                        ["󠁏", "e"],
-                        ["󠁐", "f"]];
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
 // Add custom options here if needed
@@ -76,7 +60,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("sekritPosting")) {
-        var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code>([^#<>\[\]]*)<code class=\"code-tag\"><\/code>/g);
+        var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code><del>([^#<>\[\]]*)<\/del><code class=\"code-tag\"><\/code>/g);
         for (var j = secret.length - 1; j >= 0; j--) {
             parseSecretPost(post, secret[j]);
         }
@@ -147,20 +131,9 @@ function hackLatsOptions() {
     
     document.getElementById("secretButton").onclick = function(){
         if (document.getElementById('text-input')!=null) {
-            var textToConvert = unescape(encodeURIComponent(document.getElementById('hidetext').value));
-            var base16 = '';
-            for (var j = 0; j < textToConvert.length; j++) {
-                var asciiNum = textToConvert[j].charCodeAt();
-                if (asciiNum >= 16)
-                    base16 += asciiNum.toString(16);
-                else
-                    base16 += '0' + asciiNum.toString(16);
-            }
-            for (var j = 0; j < encodedAlphabet.length; j++) {
-                base16 = base16.replace(new RegExp(encodedAlphabet[j][1], 'g'), encodedAlphabet[j][0]);
-            }
+            var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
             document.getElementById('hidetext').value='';
-            document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````' + base16 + '````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
+            document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
             var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
         }
     };
@@ -311,27 +284,15 @@ function parseDecide(post, decide) {
 }
 
 function parseSecretPost(post, secret) {
-    var base16 = secret[1];
+    var text = secret[1];
     var before = post.innerHTML.substring(0, secret.index);
     var after = post.innerHTML.substring(secret.index + secret[0].length);
 
-    for (var j = 0; j < encodedAlphabet.length; j++) {
-        base16 = base16.replace(new RegExp(encodedAlphabet[j][0], 'g'), encodedAlphabet[j][1]);
-    }
     var decodedMessage = "";
-    for (var j = 0; j < base16.length; j+=2) {
-        var twoBits = base16.substring(j, j+2);
-        var num = parseInt(twoBits, 16);
-        if (isNaN(num)) {
-            // invalid secret, don't do anything
-            return;
-        }
-        decodedMessage += String.fromCharCode(num);
-    }
     try {
-        decodedMessage = decodeURIComponent(escape(decodedMessage));
+        decodedMessage = decodeURIComponent(escape(atob(text)));
     } catch (e) {
-        console.log("invalid secret message: " + base16)
+        console.log("invalid secret message: " + text)
         return;
     }
     decodedMessage = decodedMessage.replace(new RegExp("<", 'g'), "<󠁂");
