@@ -449,6 +449,93 @@
 
         // pass in the target node, as well as the observer options
         observer.observe(thread, config);
+        
+        if (currentlyEnabledOptions.has("sekritPosting")) {
+            var parsedImages = {}; // cache results so we don't re-parse images
+            
+            var secretConfig = { childList: true };
+            var secretObserver = new MutationObserver(function(mutations) {
+                var mutation = mutations[0]; // only 1 thing will be hovered at a time
+                if (mutation.addedNodes.length > 0) {
+                    var img = mutation.addedNodes[0];
+                    if (img.nodeName != "IMG")
+                        return; // hovering over a post, not an image
+                    if (parsedImages[img.src] !== undefined) {
+                        // we've already parsed (or are parsing) this image
+                        // call addMessageToPost again in case the image was reposed in a new post
+                        if (parsedImages[img.src] !== null) {
+                            addMessageToPost(img, parsedImages[img.src])
+                        }
+                    } else {
+                        img.onload = function() {
+                            // https://stackoverflow.com/questions/934012/get-image-data-in-javascript/42916772#42916772
+                            // it isn't possible to get the bytes of an existing image, so we need to request it again
+                            // wait until the image has loaded, so it will hopefully come from the cache
+                            // (in my testing, FF seems to always reload it over the network...)
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('get', img.src);
+                            xhr.responseType = 'blob';
+                            xhr.onload = function() {
+                                var fr = new FileReader();
+                                fr.onload = function(){
+                                    var msg = parseSecretImage(img, this.result);
+                                    parsedImages[img.src] = msg;
+                                };
+                                fr.readAsDataURL(xhr.response); // async call
+                            };
+                            xhr.send();
+                        };
+                        parsedImages[img.src] = null; // set to null for now, will be filled in if there's a message
+                    }
+                }
+            });
+            secretObserver.observe(document.getElementById("hover-overlay"), secretConfig);
+        }
+    }
+    
+    function parseSecretImage(img, data) {
+        // the message is added to the end of the image
+        // image bytes
+        // text of message
+        // length of message
+        // "secret"
+        // check if this contains a secret message
+        // reading the last 16 bytes of base64 will give us 10-12 ascii chars
+        var header = atob(data.substring(data.length - 16, data.length));
+        if (header.endsWith("secret")) {
+            // the next three characters represent the length
+            var length = header.substring(header.length - 9, header.length - 6);
+            length = parseInt(length, 10);
+            if (isNaN(length)) {
+                return;
+            }
+            // now read the message
+            var base64len = Math.ceil((length + 9) / 3) * 4;
+            var message = atob(data.substring(data.length - base64len, data.length));
+            message = message.substring(message.length - 9 - length, message.length - 9);
+            message = decodeURIComponent(message);
+            
+            addMessageToPost(img, message);
+            return message;
+        }
+        return null;
+    }
+
+    function addMessageToPost(img, message) {
+        // find the post(s) that had this image
+        var url = new URL(img.src);
+        var thumbs = document.querySelectorAll("figure > a[href='"+url.pathname+"']");
+        for (var i = 0; i < thumbs.length; i++) {
+            var thumb = thumbs[i];
+            // check if we've already added something
+            if (thumb.parentNode.childElementCount == 1) {
+                // add the text
+                var text = document.createElement("text");
+                text.className = "sekrit_text";
+                text.textContent = message;
+                thumb.parentNode.appendChild(text);
+            }
+        }
     }
 
     function getCurrentOptions() {
