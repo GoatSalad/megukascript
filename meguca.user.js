@@ -103,6 +103,9 @@
         // hidetext encode
         new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
 
+        // image for secret message
+        new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">"
+        
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
@@ -133,11 +136,60 @@
         };
 
         document.getElementById("secretButton").onclick = function(){
+            var fileInput = document.getElementById("secret_image");
             if (document.getElementById('text-input')!=null) {
-                var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
-                document.getElementById('hidetext').value='';
-                document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
-                var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
+                if (fileInput.files.length == 0) {
+                    // text only
+                    var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
+                    document.getElementById('hidetext').value='';
+                    document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
+                    var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
+                } else {
+                    // encode text in an image
+                    var te = new TextEncoder();
+                    var hiddenText = document.getElementById('hidetext').value;
+                    if (te.encode(hiddenText).length > 999) {
+                        alert("secret text too long ;_;");
+                        return;
+                    }
+                    var len = te.encode(hiddenText).length.toString();
+                    if (len.length < 3)
+                        len = "0" + len;
+                    if (len.length < 3)
+                        len = "0" + len;
+                    hiddenText += len;
+                    hiddenText += "secret";
+                    var file = fileInput.files[0];
+                    var fr = new FileReader();
+                    fr.onload = function() {
+                        var buffer = this.result;
+                        var newfile = new File([buffer, te.encode(hiddenText)], file.name);
+                        var possibleInputs = document.getElementsByName("image");
+                        var realInput;
+                        for (var i = 0; i < possibleInputs.length; i++) {
+                            if (possibleInputs[i].offsetParent != null) {
+                                realInput = possibleInputs[i];
+                                break;
+                            }
+                        }
+                        // weird hacks to set our modified file
+                        // You can't set the files in a file input in javascript
+                        // But meguca's code has a reference to the file input
+                        // So fuck up the input object, then the browser will let us set `files` on it
+                        // And put back some functions which other parts of meguca's code needs
+                        var obj = new Object;
+                        var oldFns = realInput.__proto__;
+                        realInput.__proto__ = obj.__proto__;
+                        realInput.files = [newfile];
+                        realInput.style = { display : "block" };
+                        realInput.remove = oldFns.remove;
+                        realInput.matches = oldFns.matches;
+                        var evt = document.createEvent('HTMLEvents');
+                        evt.initEvent('change', false, true);
+                        oldFns.dispatchEvent.call(realInput, evt);
+                    };
+                    fr.readAsArrayBuffer(file)
+                }
             }
         };
     }
@@ -481,7 +533,7 @@
                                     var msg = parseSecretImage(img, this.result);
                                     parsedImages[img.src] = msg;
                                 };
-                                fr.readAsDataURL(xhr.response); // async call
+                                fr.readAsArrayBuffer(xhr.response); // async call
                             };
                             xhr.send();
                         };
@@ -499,22 +551,19 @@
         // text of message
         // length of message
         // "secret"
+        
         // check if this contains a secret message
-        // reading the last 16 bytes of base64 will give us 10-12 ascii chars
-        var header = atob(data.substring(data.length - 16, data.length));
-        if (header.endsWith("secret")) {
+        var td = new TextDecoder()
+        var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
+        if (header == "secret") {
             // the next three characters represent the length
-            var length = header.substring(header.length - 9, header.length - 6);
+            var length = td.decode(data.slice(data.byteLength - 9, data.byteLength - 6));
             length = parseInt(length, 10);
             if (isNaN(length)) {
                 return;
             }
             // now read the message
-            var base64len = Math.ceil((length + 9) / 3) * 4;
-            var message = atob(data.substring(data.length - base64len, data.length));
-            message = message.substring(message.length - 9 - length, message.length - 9);
-            message = decodeURIComponent(message);
-            
+            var message = td.decode(data.slice(data.byteLength - 9 - length, data.byteLength - 9));
             addMessageToPost(img, message);
             return message;
         }
