@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.7
+// @version     1.7.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -187,8 +187,12 @@
                         var evt = document.createEvent('HTMLEvents');
                         evt.initEvent('change', false, true);
                         oldFns.dispatchEvent.call(realInput, evt);
+
+                        // clean up
+                        fileInput.value = "";
+                        document.getElementById('hidetext').value='';
                     };
-                    fr.readAsArrayBuffer(file)
+                    fr.readAsArrayBuffer(file);
                 }
             }
         };
@@ -516,7 +520,7 @@
                         // we've already parsed (or are parsing) this image
                         // call addMessageToPost again in case the image was reposed in a new post
                         if (parsedImages[img.src] !== null) {
-                            addMessageToPost(img, parsedImages[img.src])
+                            addMessageToPost(img, parsedImages[img.src]);
                         }
                     } else {
                         img.onload = function() {
@@ -553,7 +557,7 @@
         // "secret"
         
         // check if this contains a secret message
-        var td = new TextDecoder()
+        var td = new TextDecoder();
         var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
         if (header == "secret") {
             // the next three characters represent the length
@@ -583,6 +587,7 @@
                 text.className = "sekrit_text";
                 text.textContent = message;
                 thumb.parentNode.appendChild(text);
+                handlePost(thumb.parentNode.parentNode); // Handlepost after adding the text
             }
         }
     }
