@@ -103,6 +103,9 @@
         // hidetext encode
         new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
 
+        // image for secret message
+        new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">"
+        
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
@@ -133,11 +136,60 @@
         };
 
         document.getElementById("secretButton").onclick = function(){
+            var fileInput = document.getElementById("secret_image");
             if (document.getElementById('text-input')!=null) {
-                var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
-                document.getElementById('hidetext').value='';
-                document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
-                var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
+                if (fileInput.files.length == 0) {
+                    // text only
+                    var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
+                    document.getElementById('hidetext').value='';
+                    document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
+                    var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
+                } else {
+                    // encode text in an image
+                    var te = new TextEncoder();
+                    var hiddenText = document.getElementById('hidetext').value;
+                    if (te.encode(hiddenText).length > 999) {
+                        alert("secret text too long ;_;");
+                        return;
+                    }
+                    var len = te.encode(hiddenText).length.toString();
+                    if (len.length < 3)
+                        len = "0" + len;
+                    if (len.length < 3)
+                        len = "0" + len;
+                    hiddenText += len;
+                    hiddenText += "secret";
+                    var file = fileInput.files[0];
+                    var fr = new FileReader();
+                    fr.onload = function() {
+                        var buffer = this.result;
+                        var newfile = new File([buffer, te.encode(hiddenText)], file.name);
+                        var possibleInputs = document.getElementsByName("image");
+                        var realInput;
+                        for (var i = 0; i < possibleInputs.length; i++) {
+                            if (possibleInputs[i].offsetParent != null) {
+                                realInput = possibleInputs[i];
+                                break;
+                            }
+                        }
+                        // weird hacks to set our modified file
+                        // You can't set the files in a file input in javascript
+                        // But meguca's code has a reference to the file input
+                        // So fuck up the input object, then the browser will let us set `files` on it
+                        // And put back some functions which other parts of meguca's code needs
+                        var obj = new Object;
+                        var oldFns = realInput.__proto__;
+                        realInput.__proto__ = obj.__proto__;
+                        realInput.files = [newfile];
+                        realInput.style = { display : "block" };
+                        realInput.remove = oldFns.remove;
+                        realInput.matches = oldFns.matches;
+                        var evt = document.createEvent('HTMLEvents');
+                        evt.initEvent('change', false, true);
+                        oldFns.dispatchEvent.call(realInput, evt);
+                    };
+                    fr.readAsArrayBuffer(file)
+                }
             }
         };
     }
@@ -449,6 +501,90 @@
 
         // pass in the target node, as well as the observer options
         observer.observe(thread, config);
+        
+        if (currentlyEnabledOptions.has("sekritPosting")) {
+            var parsedImages = {}; // cache results so we don't re-parse images
+            
+            var secretConfig = { childList: true };
+            var secretObserver = new MutationObserver(function(mutations) {
+                var mutation = mutations[0]; // only 1 thing will be hovered at a time
+                if (mutation.addedNodes.length > 0) {
+                    var img = mutation.addedNodes[0];
+                    if (img.nodeName != "IMG")
+                        return; // hovering over a post, not an image
+                    if (parsedImages[img.src] !== undefined) {
+                        // we've already parsed (or are parsing) this image
+                        // call addMessageToPost again in case the image was reposed in a new post
+                        if (parsedImages[img.src] !== null) {
+                            addMessageToPost(img, parsedImages[img.src])
+                        }
+                    } else {
+                        img.onload = function() {
+                            // https://stackoverflow.com/questions/934012/get-image-data-in-javascript/42916772#42916772
+                            // it isn't possible to get the bytes of an existing image, so we need to request it again
+                            // wait until the image has loaded, so it will hopefully come from the cache
+                            // (in my testing, FF seems to always reload it over the network...)
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('get', img.src);
+                            xhr.responseType = 'blob';
+                            xhr.onload = function() {
+                                var fr = new FileReader();
+                                fr.onload = function(){
+                                    var msg = parseSecretImage(img, this.result);
+                                    parsedImages[img.src] = msg;
+                                };
+                                fr.readAsArrayBuffer(xhr.response); // async call
+                            };
+                            xhr.send();
+                        };
+                        parsedImages[img.src] = null; // set to null for now, will be filled in if there's a message
+                    }
+                }
+            });
+            secretObserver.observe(document.getElementById("hover-overlay"), secretConfig);
+        }
+    }
+    
+    function parseSecretImage(img, data) {
+        // the message is added to the end of the image
+        // image bytes
+        // text of message
+        // length of message
+        // "secret"
+        
+        // check if this contains a secret message
+        var td = new TextDecoder()
+        var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
+        if (header == "secret") {
+            // the next three characters represent the length
+            var length = td.decode(data.slice(data.byteLength - 9, data.byteLength - 6));
+            length = parseInt(length, 10);
+            if (isNaN(length)) {
+                return;
+            }
+            // now read the message
+            var message = td.decode(data.slice(data.byteLength - 9 - length, data.byteLength - 9));
+            addMessageToPost(img, message);
+            return message;
+        }
+        return null;
+    }
+
+    function addMessageToPost(img, message) {
+        // find the post(s) that had this image
+        var url = new URL(img.src);
+        var thumbs = document.querySelectorAll("figure > a[href='"+url.pathname+"']");
+        for (var i = 0; i < thumbs.length; i++) {
+            var thumb = thumbs[i];
+            // check if we've already added something
+            if (thumb.parentNode.childElementCount == 1) {
+                // add the text
+                var text = document.createElement("text");
+                text.className = "sekrit_text";
+                text.textContent = message;
+                thumb.parentNode.appendChild(text);
+            }
+        }
     }
 
     function getCurrentOptions() {
