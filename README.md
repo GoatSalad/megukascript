@@ -43,6 +43,12 @@ Allows for 'share rolls' formatting. Giving multiple choices and highlighting th
 Call the function with <b>[option1, option2, ...] #ndx </b>  
 </details>
 
+<details><summary>Secret posting</summary>
+Post messages that only userscript users can read! (Not guaranteed) <br/>
+After opening up the post box, just open the userscript options (Top right gear and then "Meguca Userscript"), type your secret message on the "encode text" box, and press "Convert & input". This will add your secret message to the post. This message will be automatically decoded for everyone with the userscript. <br/>
+If you add a pic beforehand (right below the encode text box) the message will instead be hidden inside the image. Hover any image to reveal its secret text.
+</details>
+
 ## Installation
 <ul>
  <li>Install Tampermonkey for <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?  hl=en">Chrome</a>/<a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/">Firefox</a></li>
