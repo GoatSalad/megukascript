@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.7.1
+// @version     1.8.0
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -22,7 +22,8 @@
                           ["dumbblanc", "dumb blancposters, not cute"],
                           ["sharesOption", "Shares Formatting"],
                           ["screamingPosters", "Vibrate screaming posts"],
-                          ["sekritPosting", "Secret Posting"]];
+                          ["sekritPosting", "Secret Posting"],
+                          ["megucaplayerOption", "Show music player"]];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
     // Add custom options here if needed
@@ -104,7 +105,7 @@
         new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
 
         // image for secret message
-        new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">"
+        new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
         
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
@@ -121,6 +122,24 @@
             document.getElementById(id).onchange = function() {
                 localStorage.setItem(this.id, this.checked ? "on" : "off");
             };
+        }
+
+        document.getElementById("megucaplayerOption").onclick = function() {
+            if (document.getElementById("megucaplayerOption").checked) {
+                // Load songs and show
+                mgcPl_songs = [];
+                document.getElementById("megucaplaylist").innerHTML = "";
+                mgcPl_fetchAllSongs();
+                var frame = document.getElementById("mgcPlFrame");
+                frame.style.display = "unset";
+                frame.style.top = "100px";
+                frame.style.left = "100px";
+
+            } else {
+                mgcPl_stopPlayer();
+                if (mgcPl_meguca_player !== null && mgcPl_meguca_player !== undefined) mgcPl_meguca_player.src = "";
+                document.getElementById("mgcPlFrame").style.display = "none";
+            }
         }
 
         // flashing duration
@@ -220,6 +239,20 @@
             ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }"+
             ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }";
         document.head.appendChild(css);
+    }
+
+    function mgcPl_InsertHtmlAndCSS() {
+        var css = document.createElement("style");
+        css.type = "text/css";
+        css.innerHTML = "#mgcPlFrame {position: fixed;top: 100px;left: 100px;height: 300px;background-color: black;max-width: 400px;"
+        if (!currentlyEnabledOptions.has("megucaplayerOption"))
+            css.innerHTML += "display: none;";
+        css.innerHTML += "} .mgcPlPlaylist{width: 100%;height: 85%;} .mgcPlControls {height: 20px;width: 80px;} .mgcPlOptions {display: flex;flex: 1;justify-content: center;width: 100%;} .mgcPlTitle {color: white;padding: 0;margin: 0;width: 100%;text-align: center;}";
+        document.head.appendChild(css);
+        
+        var newdiv = document.createElement("div");
+        newdiv.innerHTML = "<div draggable=\"true\" id=\"mgcPlFrame\"><div class=\"mgcPlOptions2\"><p class=\"mgcPlTitle\">MegucaPlayer</p><div class=\"mgcPlOptions\"><button class=\"mgcPlControls\" id=\"mgcPlPrevBut\">prev</button><button class=\"mgcPlControls\" id=\"mgcPlStopBut\">stop</button><button class=\"mgcPlControls\" id=\"mgcPlPlayBut\">play/pause</button><button class=\"mgcPlControls\" id=\"mgcPlNextBut\">next</button></div></div><select class=\"glass mgcPlPlaylist\" multiple id=\"megucaplaylist\"></select></div>";
+        document.body.appendChild(newdiv);
     }
 
     function getIterations(period) {
@@ -482,11 +515,13 @@
                         if (postItself.getAttribute("class").includes("editing")) return;
                         // handlesPost (works for others posters)
                         handlePost(postContent);
+                        mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
 
                         // launch observer3 (only works for own posts)
                         var observer3 = new MutationObserver(function(mutations3) {
                             mutations3.forEach(function(mutation3) {
                                 handlePost(postContent);
+                                mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
                             });
                         });
 
@@ -711,9 +746,137 @@
         readPostsForRolls();
         setObservers();
         hackLatsOptions();
+        mgcPl_setupPlaylist();
         if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
     }
 
-    setup();
+    var mgcPl_offset = [];
+    var mgcPl_songs = []; // name, duration, link
+    var mgcPl_meguca_player;
+    var mgcPl_currentIndex = -1;
 
+    function mgcPl_allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function mgcPl_drag(ev) {
+        ev.dataTransfer.setData("id", ev.target.id);
+        var style = window.getComputedStyle(event.target, null);
+        mgcPl_offset[0] = parseInt(style.getPropertyValue("left"), 10) - ev.clientX;
+        mgcPl_offset[1] = parseInt(style.getPropertyValue("top"), 10) - ev.clientY;
+    }
+
+    function mgcPl_drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("id");
+        var thingy = document.getElementById(data);
+        thingy.style.left = (ev.clientX + parseInt(mgcPl_offset[0],10)) + 'px';
+        thingy.style.top = (ev.clientY + parseInt(mgcPl_offset[1],10)) + 'px';
+    }
+
+    function mgcPl_playSelected() {
+        mgcPl_play(document.getElementById("megucaplaylist").selectedIndex);
+    }
+
+    function mgcPl_play(selectedIndex) {
+        console.log(mgcPl_songs[selectedIndex][2]);
+        if (selectedIndex != mgcPl_currentIndex){
+            mgcPl_meguca_player = new Audio(mgcPl_songs[selectedIndex][2]);
+            mgcPl_currentIndex = selectedIndex;
+            mgcPl_meguca_player.onended = function(){mgcPl_playSong(1);};
+        } else if (!mgcPl_meguca_player.paused) {
+            mgcPl_meguca_player.pause();
+            return;
+        }
+        mgcPl_meguca_player.play();
+    }
+
+    function mgcPl_stopPlayer() {
+        if (mgcPl_meguca_player === null || mgcPl_meguca_player === undefined) return;
+
+            mgcPl_meguca_player.pause();
+            mgcPl_meguca_player.currentTime = 0;
+        }
+
+        function mgcPl_playSong(variation) {
+            if (mgcPl_meguca_player !== null && mgcPl_meguca_player !== undefined) {
+                mgcPl_meguca_player.pause();
+                mgcPl_meguca_player.src = "";
+            }
+            var nextIndex = (mgcPl_currentIndex + variation) % mgcPl_songs.length;
+            document.getElementById("megucaplaylist").selectedIndex = nextIndex;
+            mgcPl_play(nextIndex);
+        }
+
+    function mgcPl_addAllSongs() {
+        var playlist = document.getElementById("megucaplaylist");
+        for (var i = 0; i < mgcPl_songs.length; i++) {
+            var newOp = document.createElement("option");
+            var songInfo = document.createTextNode(mgcPl_songs[i][1] + " | " + mgcPl_songs[i][0]);
+            newOp.appendChild(songInfo);
+            playlist.appendChild(newOp);
+        }
+    }
+
+    function mgcPl_fetchAllSongs() {
+        var fileinfos = document.getElementsByTagName("figcaption");
+        for (var i = 0; i < fileinfos.length; i++) {
+            mgcPl_addNewSong(fileinfos[i]);
+        }
+    }
+
+    function mgcPl_addNewSong(figcaption) {
+        if (figcaption === null || figcaption === undefined) return;
+
+        var link = figcaption.children[3].href;
+        // Small hack to avoid adding songs twice due to the observers
+        if (mgcPl_songs.length > 0 && link === mgcPl_songs[mgcPl_songs.length-1][2]) return;
+
+        if (link.endsWith(".mp3") || link.endsWith(".flac")) {
+            var songinfo = figcaption.children[2];
+            var artistSpan = songinfo.getElementsByClassName("media-artist")[0];
+            var titleSpan = songinfo.getElementsByClassName("media-title")[0];
+            var durationSpan = songinfo.getElementsByClassName("media-length")[0];
+
+            var name = "";
+            if (artistSpan !== undefined && artistSpan.innerHTML !== "")
+                name = artistSpan.innerHTML + " - "; // media artist
+            if (titleSpan !== undefined && titleSpan.innerHTML !== "")
+                name += titleSpan.innerHTML; // title
+            if (name === "")
+                name = figcaption.children[3].download; // download filename
+
+            var duration = "00:00";
+            if (durationSpan !== undefined)
+                duration = durationSpan.innerHTML; // duration
+
+            mgcPl_songs.push([name, duration, link]);
+
+            var newOp = document.createElement("option");
+            var songInfo = document.createTextNode(duration + " | " + name);
+            newOp.appendChild(songInfo);
+
+            var playlist = document.getElementById("megucaplaylist");
+            playlist.appendChild(newOp);
+        }
+
+    }
+
+    function mgcPl_setupPlaylist() {
+        mgcPl_InsertHtmlAndCSS();
+        var dm = document.getElementById('mgcPlFrame');
+        dm.addEventListener('dragstart',mgcPl_drag,false);
+        document.body.addEventListener('dragover',mgcPl_allowDrop,false);
+        document.body.addEventListener('drop',mgcPl_drop,false);
+
+        document.getElementById("mgcPlPrevBut").addEventListener("click", function(){mgcPl_playSong(-1);});
+        document.getElementById("mgcPlStopBut").addEventListener("click", function(){mgcPl_stopPlayer();});
+        document.getElementById("mgcPlPlayBut").addEventListener("click", function(){mgcPl_playSelected();});
+        document.getElementById("mgcPlNextBut").addEventListener("click", function(){mgcPl_playSong(1);});
+        document.getElementById("megucaplaylist").addEventListener("dblclick", function(){mgcPl_playSelected();});
+
+        mgcPl_fetchAllSongs();
+    }
+
+    setup();
 })();
