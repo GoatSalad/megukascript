@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.8.1
+// @version     1.8.2
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
