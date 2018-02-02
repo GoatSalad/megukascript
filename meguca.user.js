@@ -779,7 +779,7 @@
     }
 
     function mgcPl_play(selectedIndex) {
-        console.log(mgcPl_songs[selectedIndex][2]);
+        mgcPl_killPlayer();
         if (selectedIndex != mgcPl_currentIndex){
             mgcPl_meguca_player = new Audio(mgcPl_songs[selectedIndex][2]);
             mgcPl_currentIndex = selectedIndex;
@@ -798,15 +798,19 @@
             mgcPl_meguca_player.currentTime = 0;
         }
 
-        function mgcPl_playSong(variation) {
-            if (mgcPl_meguca_player !== null && mgcPl_meguca_player !== undefined) {
-                mgcPl_meguca_player.pause();
-                mgcPl_meguca_player.src = "";
-            }
-            var nextIndex = (mgcPl_currentIndex + variation) % mgcPl_songs.length;
-            document.getElementById("megucaplaylist").selectedIndex = nextIndex;
-            mgcPl_play(nextIndex);
+    function mgcPl_playSong(variation) {
+        mgcPl_killPlayer();
+        var nextIndex = (mgcPl_currentIndex + variation) % mgcPl_songs.length;
+        document.getElementById("megucaplaylist").selectedIndex = nextIndex;
+        mgcPl_play(nextIndex);
+    }
+
+    function mgcPl_killPlayer() {
+        if (mgcPl_meguca_player !== null && mgcPl_meguca_player !== undefined) {
+            mgcPl_meguca_player.pause();
+            mgcPl_meguca_player.src = "";
         }
+    }
 
     function mgcPl_addAllSongs() {
         var playlist = document.getElementById("megucaplaylist");
