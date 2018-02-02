@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.8.0
+// @version     1.8.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -251,7 +251,7 @@
         document.head.appendChild(css);
         
         var newdiv = document.createElement("div");
-        newdiv.innerHTML = "<div draggable=\"true\" id=\"mgcPlFrame\"><div class=\"mgcPlOptions2\"><p class=\"mgcPlTitle\">MegucaPlayer</p><div class=\"mgcPlOptions\"><button class=\"mgcPlControls\" id=\"mgcPlPrevBut\">prev</button><button class=\"mgcPlControls\" id=\"mgcPlStopBut\">stop</button><button class=\"mgcPlControls\" id=\"mgcPlPlayBut\">play/pause</button><button class=\"mgcPlControls\" id=\"mgcPlNextBut\">next</button></div></div><select class=\"glass mgcPlPlaylist\" multiple id=\"megucaplaylist\"></select></div>";
+        newdiv.innerHTML = "<div draggable=\"true\" id=\"mgcPlFrame\"><div class=\"mgcPlOptions2\"><p class=\"mgcPlTitle\">MegucaPlayer</p><div class=\"mgcPlOptions\"><button class=\"mgcPlControls\" id=\"mgcPlPrevBut\">prev</button><button class=\"mgcPlControls\" id=\"mgcPlStopBut\">stop</button><button class=\"mgcPlControls\" id=\"mgcPlPlayBut\">play/pause</button><button class=\"mgcPlControls\" id=\"mgcPlNextBut\">next</button></div></div><select class=\"mgcPlPlaylist\" multiple id=\"megucaplaylist\"></select></div>";
         document.body.appendChild(newdiv);
     }
 
