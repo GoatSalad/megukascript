@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.8.2
+// @version     1.8.3
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -757,13 +757,15 @@
 
     function mgcPl_allowDrop(ev) {
         ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'move';
     }
 
     function mgcPl_drag(ev) {
         ev.dataTransfer.setData("id", ev.target.id);
-        var style = window.getComputedStyle(event.target, null);
+        var style = window.getComputedStyle(ev.target, null);
         mgcPl_offset[0] = parseInt(style.getPropertyValue("left"), 10) - ev.clientX;
         mgcPl_offset[1] = parseInt(style.getPropertyValue("top"), 10) - ev.clientY;
+        ev.target.style.opacity = '0.6';  // this / e.target is the source node.
     }
 
     function mgcPl_drop(ev) {
@@ -772,6 +774,7 @@
         var thingy = document.getElementById(data);
         thingy.style.left = (ev.clientX + parseInt(mgcPl_offset[0],10)) + 'px';
         thingy.style.top = (ev.clientY + parseInt(mgcPl_offset[1],10)) + 'px';
+        thingy.style.opacity = '1';
     }
 
     function mgcPl_playSelected() {
@@ -863,7 +866,6 @@
             var playlist = document.getElementById("megucaplaylist");
             playlist.appendChild(newOp);
         }
-
     }
 
     function mgcPl_setupPlaylist() {
