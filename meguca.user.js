@@ -3,7 +3,7 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.9
+// @version     1.9.1
 // @author      medukasthegucas
 // @grant       none
 // ==/UserScript==
@@ -908,8 +908,9 @@
     }
 
     function mgcPl_convertLengthToSecs(string) {
-        var minutes = parseInt(string.substring(0,2));
-        var seconds = parseInt(string.substring(3,5));
+        var midSign = string.indexOf(":");
+        var minutes = parseInt(string.substring(0,midSign));
+        var seconds = parseInt(string.substring(midSign + 1));
         return (minutes * 60) + seconds;
     }
 
