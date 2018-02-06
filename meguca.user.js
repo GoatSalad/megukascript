@@ -3,9 +3,10 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
-// @version     1.9.1
+// @connect     meguca.org
+// @version     1.9.2
 // @author      medukasthegucas
-// @grant       none
+// @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
 //global scope
@@ -141,7 +142,7 @@
                 document.getElementById("mgcPlFrame").style.display = "none";
                 clearInterval(mgcPl_seekerBar_updater);
             }
-        }
+        };
 
         // flashing duration
         document.getElementById("flashing").value = flashingDuration;
@@ -245,7 +246,7 @@
     function mgcPl_InsertHtmlAndCSS() {
         var css = document.createElement("style");
         css.type = "text/css";
-        css.innerHTML = "#mgcPlFrame { position: fixed; top: 100px; left: 100px; height: 300px; background-color: black; max-width: 400px;"
+        css.innerHTML = "#mgcPlFrame { position: fixed; top: 100px; left: 100px; height: 300px; background-color: black; max-width: 400px;";
         if (!currentlyEnabledOptions.has("megucaplayerOption"))
             css.innerHTML += " display: none;";
         css.innerHTML += " }  .mgcPlPlaylist{ width: 100%; height: 85%; }  .mgcPlControls { height: 20px; width: 80px; }  .mgcPlOptions { display: flex; flex: 1; justify-content: center; width: 100%; }  .mgcPlTitle { color: white; padding: 0; margin: 0; width: 100%; text-align: center; }  .mgcPlSliders { display: flex; margin: 0 5px; }  .mgcPlSeeker { flex: 2; margin: 5px 5px; color: white; }  .mgcPlVolume { flex: 1; margin: 5px 5px; color: white; }";
@@ -564,18 +565,33 @@
                             // it isn't possible to get the bytes of an existing image, so we need to request it again
                             // wait until the image has loaded, so it will hopefully come from the cache
                             // (in my testing, FF seems to always reload it over the network...)
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('get', img.src);
-                            xhr.responseType = 'blob';
-                            xhr.onload = function() {
-                                var fr = new FileReader();
-                                fr.onload = function(){
-                                    var msg = parseSecretImage(img, this.result);
-                                    parsedImages[img.src] = msg;
-                                };
-                                fr.readAsArrayBuffer(xhr.response); // async call
-                            };
-                            xhr.send();
+                            GM_xmlhttpRequest({
+                                method: "GET",
+                                url: img.src,
+                                responseType: 'blob',
+                                onload: function(response) {
+                                    var fr = new FileReader();
+                                    fr.onload = function(){
+                                        var msg = parseSecretImage(img, this.result);
+                                        parsedImages[img.src] = msg;
+                                    };
+
+                                    fr.readAsArrayBuffer(response.response); // async call
+                                }
+                            });
+
+                            // var xhr = new XMLHttpRequest();
+                            // xhr.open('get', img.src);
+                            // xhr.responseType = 'blob';
+                            // xhr.onload = function() {
+                            //     var fr = new FileReader();
+                            //     fr.onload = function(){
+                            //         var msg = parseSecretImage(img, this.result);
+                            //         parsedImages[img.src] = msg;
+                            //     };
+                            //     fr.readAsArrayBuffer(xhr.response); // async call
+                            // };
+                            // xhr.send();
                         };
                         parsedImages[img.src] = null; // set to null for now, will be filled in if there's a message
                     }
@@ -612,8 +628,8 @@
 
     function addMessageToPost(img, message) {
         // find the post(s) that had this image
-        var url = new URL(img.src);
-        var thumbs = document.querySelectorAll("figure > a[href='"+url.pathname+"']");
+        // var url = new URL(img.src);
+        var thumbs = document.querySelectorAll("figure > a[href='"+img.src+"']");
         for (var i = 0; i < thumbs.length; i++) {
             var thumb = thumbs[i];
             // check if we've already added something
