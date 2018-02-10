@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.2
+// @version     1.9.3
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -107,7 +107,7 @@
 
         // image for secret message
         new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
-        
+
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
@@ -251,7 +251,7 @@
             css.innerHTML += " display: none;";
         css.innerHTML += " }  .mgcPlPlaylist{ width: 100%; height: 85%; }  .mgcPlControls { height: 20px; width: 80px; }  .mgcPlOptions { display: flex; flex: 1; justify-content: center; width: 100%; }  .mgcPlTitle { color: white; padding: 0; margin: 0; width: 100%; text-align: center; }  .mgcPlSliders { display: flex; margin: 0 5px; }  .mgcPlSeeker { flex: 2; margin: 5px 5px; color: white; }  .mgcPlVolume { flex: 1; margin: 5px 5px; color: white; }";
         document.head.appendChild(css);
-        
+
         var newdiv = document.createElement("div");
         newdiv.innerHTML = "<div id=\"mgcPlFrame\">  <div class=\"mgcPlOptions2\"> <div draggable=\"true\" id=\"mgcPldragArea\"> <p class=\"mgcPlTitle\">MegucaPlayer</p> <div class=\"mgcPlOptions\"> <button class=\"mgcPlControls\" id=\"mgcPlPrevBut\">prev</button> <button class=\"mgcPlControls\" id=\"mgcPlStopBut\">stop</button> <button class=\"mgcPlControls\" id=\"mgcPlPlayBut\">play/pause</button> <button class=\"mgcPlControls\" id=\"mgcPlNextBut\">next</button> </div> </div> <div class=\"mgcPlSliders\"> <label class=\"mgcPlSeeker\">Seeker: </label> <label class=\"mgcPlVolume\">Volume: </label> </div> <div class=\"mgcPlSliders\"> <input type=\"range\" min=\"0\" max=\"1\" value=\"0\" class=\"mgcPlSeeker\" id=\"mgcPlSeekerSlider\"> <input type=\"range\" min=\"0\" max=\"100\" value=\"100\" class=\"mgcPlVolume\" id=\"mgcPlVolumeSlider\"> </div> </div> <select class=\"mgcPlPlaylist\" multiple id=\"megucaplaylist\"> </select> </div>";
         document.body.appendChild(newdiv);
@@ -542,10 +542,10 @@
 
         // pass in the target node, as well as the observer options
         observer.observe(thread, config);
-        
+
         if (currentlyEnabledOptions.has("sekritPosting")) {
             var parsedImages = {}; // cache results so we don't re-parse images
-            
+
             var secretConfig = { childList: true };
             var secretObserver = new MutationObserver(function(mutations) {
                 var mutation = mutations[0]; // only 1 thing will be hovered at a time
@@ -579,19 +579,6 @@
                                     fr.readAsArrayBuffer(response.response); // async call
                                 }
                             });
-
-                            // var xhr = new XMLHttpRequest();
-                            // xhr.open('get', img.src);
-                            // xhr.responseType = 'blob';
-                            // xhr.onload = function() {
-                            //     var fr = new FileReader();
-                            //     fr.onload = function(){
-                            //         var msg = parseSecretImage(img, this.result);
-                            //         parsedImages[img.src] = msg;
-                            //     };
-                            //     fr.readAsArrayBuffer(xhr.response); // async call
-                            // };
-                            // xhr.send();
                         };
                         parsedImages[img.src] = null; // set to null for now, will be filled in if there's a message
                     }
@@ -600,14 +587,14 @@
             secretObserver.observe(document.getElementById("hover-overlay"), secretConfig);
         }
     }
-    
+
     function parseSecretImage(img, data) {
         // the message is added to the end of the image
         // image bytes
         // text of message
         // length of message
         // "secret"
-        
+
         // check if this contains a secret message
         var td = new TextDecoder();
         var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
@@ -628,8 +615,8 @@
 
     function addMessageToPost(img, message) {
         // find the post(s) that had this image
-        // var url = new URL(img.src);
-        var thumbs = document.querySelectorAll("figure > a[href='"+img.src+"']");
+        var url = new URL(img.src, "https://meguca.org");
+        var thumbs = document.querySelectorAll("figure > a[href$='"+url.pathname+"']");
         for (var i = 0; i < thumbs.length; i++) {
             var thumb = thumbs[i];
             // check if we've already added something
