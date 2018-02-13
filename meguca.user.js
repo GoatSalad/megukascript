@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.3
+// @version     1.9.4
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -25,6 +25,8 @@
                           ["screamingPosters", "Vibrate screaming posts"],
                           ["sekritPosting", "Secret Posting"],
                           ["megucaplayerOption", "Show music player"]];
+    const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
+                            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心何日口二手山木糸羽雨辵水金色無"];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
     // Add custom options here if needed
@@ -163,6 +165,10 @@
                     // text only
                     var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
                     document.getElementById('hidetext').value='';
+                    for (var j = 0; j < nipponeseIndex[0].length; j++) {
+                        if (text.indexOf(nipponeseIndex[0][j]) != -1) 
+                            text = text.replace(new RegExp(nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]);
+                    }
                     document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
                     var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
                 } else {
@@ -178,6 +184,7 @@
                         len = "0" + len;
                     if (len.length < 3)
                         len = "0" + len;
+
                     hiddenText += len;
                     hiddenText += "secret";
                     var file = fileInput.files[0];
@@ -382,6 +389,10 @@
         var before = post.innerHTML.substring(0, secret.index);
         var after = post.innerHTML.substring(secret.index + secret[0].length);
 
+        for (var j = 0; j < nipponeseIndex[0].length; j++) {
+            text = text.replace(new RegExp(nipponeseIndex[1][j], 'g'), nipponeseIndex[0][j])
+        }
+
         var decodedMessage = "";
         try {
             decodedMessage = decodeURIComponent(escape(atob(text)));
@@ -402,7 +413,7 @@
             secretQuote[0] = secretQuote[0].substring(0,secretQuote[0].length-1);
         }
         quote = "<a class=\"post-link\" data-id=\"" + quote + "\" href=\"#p" + quote + "\">&gt;&gt;" + quote + "</a><a class=\"hash-link\" href=\"#p" + quote + "\"> #</a>";
-        post.innerHTML = before2 + " </h>" + quote + "<h class=sekrit_text> " + after2;
+        post.innerHTML = before2 + " </h>" + quote + after2; //"<h class=sekrit_text> " + 
     }
 
     function parseShares(post, shares) {
@@ -748,7 +759,8 @@
         getCurrentOptions();
         insertCuteIntoCSS();
         readPostsForRolls();
-        setObservers();
+        if (document.getElementById("thread-container") != null) 
+            setObservers();
         hackLatsOptions();
         mgcPl_setupPlaylist();
         if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
