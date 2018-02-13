@@ -390,7 +390,7 @@
         var after = post.innerHTML.substring(secret.index + secret[0].length);
 
         for (var j = 0; j < nipponeseIndex[0].length; j++) {
-            text = text.replace(new RegExp(nipponeseIndex[1][j], 'g'), nipponeseIndex[0][j])
+            text = text.replace(new RegExp(nipponeseIndex[1][j], 'g'), nipponeseIndex[0][j]);
         }
 
         var decodedMessage = "";
