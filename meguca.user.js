@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.5
+// @version     1.9.6
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -24,6 +24,7 @@
                           ["sharesOption", "Shares Formatting"],
                           ["screamingPosters", "Vibrate screaming posts"],
                           ["sekritPosting", "Secret Posting"],
+                          ["imgsekritPosting", "Image Secret Posting"],
                           ["megucaplayerOption", "Show music player"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
@@ -554,7 +555,7 @@
         // pass in the target node, as well as the observer options
         observer.observe(thread, config);
 
-        if (currentlyEnabledOptions.has("sekritPosting")) {
+        if (currentlyEnabledOptions.has("imgsekritPosting")) {
             var parsedImages = {}; // cache results so we don't re-parse images
 
             var secretConfig = { childList: true };
