@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.2
+// @version     1.9.5
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -859,7 +859,7 @@
         // Small hack to avoid adding songs twice due to the observers
         if (mgcPl_songs.length > 0 && link === mgcPl_songs[mgcPl_songs.length-1][2]) return;
 
-        if (link.endsWith(".mp3") || link.endsWith(".flac")) {
+        if (link.endsWith(".mp3") || link.endsWith(".flac") || link.endsWith(".mp4") || link.endsWith(".ogg")) {
             var songinfo = figcaption.children[2];
             var artistSpan = songinfo.getElementsByClassName("media-artist")[0];
             var titleSpan = songinfo.getElementsByClassName("media-title")[0];
