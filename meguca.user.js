@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.7
+// @version     1.9.8
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -168,7 +168,11 @@
         document.getElementById("vibration").onchange = function(){
             localStorage.setItem(this.id, this.value);
         };
-
+        document.querySelector("#hidetext").addEventListener("keyup", function(event) {
+            if(event.key !== "Enter") return; // Use `.key` instead.
+            document.querySelector("#secretButton").click(); // Things you want to do.
+            event.preventDefault(); // No need to `return false;`.
+        });
         document.getElementById("secretButton").onclick = function(){
             var fileInput = document.getElementById("secret_image");
             if (document.getElementById('text-input')!=null) {
