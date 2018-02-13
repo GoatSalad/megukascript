@@ -4,7 +4,11 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
+<<<<<<< HEAD
 // @version     1.9.5
+=======
+// @version     1.9.4
+>>>>>>> 9e0160df798ba6bb01327139f9c3ddf6baad0aee
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -25,6 +29,8 @@
                           ["screamingPosters", "Vibrate screaming posts"],
                           ["sekritPosting", "Secret Posting"],
                           ["megucaplayerOption", "Show music player"]];
+    const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
+                            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
     // Add custom options here if needed
@@ -107,7 +113,7 @@
 
         // image for secret message
         new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
-        
+
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
@@ -163,6 +169,10 @@
                     // text only
                     var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
                     document.getElementById('hidetext').value='';
+                    for (var j = 0; j < nipponeseIndex[0].length; j++) {
+                        if (text.indexOf(nipponeseIndex[0][j]) != -1) 
+                            text = text.replace(new RegExp(nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]);
+                    }
                     document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
                     var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
                 } else {
@@ -178,6 +188,7 @@
                         len = "0" + len;
                     if (len.length < 3)
                         len = "0" + len;
+
                     hiddenText += len;
                     hiddenText += "secret";
                     var file = fileInput.files[0];
@@ -251,7 +262,7 @@
             css.innerHTML += " display: none;";
         css.innerHTML += " }  .mgcPlPlaylist{ width: 100%; height: 85%; }  .mgcPlControls { height: 20px; width: 80px; }  .mgcPlOptions { display: flex; flex: 1; justify-content: center; width: 100%; }  .mgcPlTitle { color: white; padding: 0; margin: 0; width: 100%; text-align: center; }  .mgcPlSliders { display: flex; margin: 0 5px; }  .mgcPlSeeker { flex: 2; margin: 5px 5px; color: white; }  .mgcPlVolume { flex: 1; margin: 5px 5px; color: white; }";
         document.head.appendChild(css);
-        
+
         var newdiv = document.createElement("div");
         newdiv.innerHTML = "<div id=\"mgcPlFrame\">  <div class=\"mgcPlOptions2\"> <div draggable=\"true\" id=\"mgcPldragArea\"> <p class=\"mgcPlTitle\">MegucaPlayer</p> <div class=\"mgcPlOptions\"> <button class=\"mgcPlControls\" id=\"mgcPlPrevBut\">prev</button> <button class=\"mgcPlControls\" id=\"mgcPlStopBut\">stop</button> <button class=\"mgcPlControls\" id=\"mgcPlPlayBut\">play/pause</button> <button class=\"mgcPlControls\" id=\"mgcPlNextBut\">next</button> </div> </div> <div class=\"mgcPlSliders\"> <label class=\"mgcPlSeeker\">Seeker: </label> <label class=\"mgcPlVolume\">Volume: </label> </div> <div class=\"mgcPlSliders\"> <input type=\"range\" min=\"0\" max=\"1\" value=\"0\" class=\"mgcPlSeeker\" id=\"mgcPlSeekerSlider\"> <input type=\"range\" min=\"0\" max=\"100\" value=\"100\" class=\"mgcPlVolume\" id=\"mgcPlVolumeSlider\"> </div> </div> <select class=\"mgcPlPlaylist\" multiple id=\"megucaplaylist\"> </select> </div>";
         document.body.appendChild(newdiv);
@@ -382,6 +393,10 @@
         var before = post.innerHTML.substring(0, secret.index);
         var after = post.innerHTML.substring(secret.index + secret[0].length);
 
+        for (var j = 0; j < nipponeseIndex[0].length; j++) {
+            text = text.replace(new RegExp(nipponeseIndex[1][j], 'g'), nipponeseIndex[0][j]);
+        }
+
         var decodedMessage = "";
         try {
             decodedMessage = decodeURIComponent(escape(atob(text)));
@@ -402,7 +417,7 @@
             secretQuote[0] = secretQuote[0].substring(0,secretQuote[0].length-1);
         }
         quote = "<a class=\"post-link\" data-id=\"" + quote + "\" href=\"#p" + quote + "\">&gt;&gt;" + quote + "</a><a class=\"hash-link\" href=\"#p" + quote + "\"> #</a>";
-        post.innerHTML = before2 + " </h>" + quote + "<h class=sekrit_text> " + after2;
+        post.innerHTML = before2 + " </h>" + quote + after2; //"<h class=sekrit_text> " + 
     }
 
     function parseShares(post, shares) {
@@ -542,10 +557,10 @@
 
         // pass in the target node, as well as the observer options
         observer.observe(thread, config);
-        
+
         if (currentlyEnabledOptions.has("sekritPosting")) {
             var parsedImages = {}; // cache results so we don't re-parse images
-            
+
             var secretConfig = { childList: true };
             var secretObserver = new MutationObserver(function(mutations) {
                 var mutation = mutations[0]; // only 1 thing will be hovered at a time
@@ -579,19 +594,6 @@
                                     fr.readAsArrayBuffer(response.response); // async call
                                 }
                             });
-
-                            // var xhr = new XMLHttpRequest();
-                            // xhr.open('get', img.src);
-                            // xhr.responseType = 'blob';
-                            // xhr.onload = function() {
-                            //     var fr = new FileReader();
-                            //     fr.onload = function(){
-                            //         var msg = parseSecretImage(img, this.result);
-                            //         parsedImages[img.src] = msg;
-                            //     };
-                            //     fr.readAsArrayBuffer(xhr.response); // async call
-                            // };
-                            // xhr.send();
                         };
                         parsedImages[img.src] = null; // set to null for now, will be filled in if there's a message
                     }
@@ -600,14 +602,14 @@
             secretObserver.observe(document.getElementById("hover-overlay"), secretConfig);
         }
     }
-    
+
     function parseSecretImage(img, data) {
         // the message is added to the end of the image
         // image bytes
         // text of message
         // length of message
         // "secret"
-        
+
         // check if this contains a secret message
         var td = new TextDecoder();
         var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
@@ -628,8 +630,8 @@
 
     function addMessageToPost(img, message) {
         // find the post(s) that had this image
-        // var url = new URL(img.src);
-        var thumbs = document.querySelectorAll("figure > a[href='"+img.src+"']");
+        var url = new URL(img.src, "https://meguca.org");
+        var thumbs = document.querySelectorAll("figure > a[href$='"+url.pathname+"']");
         for (var i = 0; i < thumbs.length; i++) {
             var thumb = thumbs[i];
             // check if we've already added something
@@ -761,7 +763,8 @@
         getCurrentOptions();
         insertCuteIntoCSS();
         readPostsForRolls();
-        setObservers();
+        if (document.getElementById("thread-container") != null) 
+            setObservers();
         hackLatsOptions();
         mgcPl_setupPlaylist();
         if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
