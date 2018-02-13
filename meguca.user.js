@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.6
+// @version     1.9.7
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -105,17 +105,27 @@
         // vibration duration
         new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
 
-        // hidetext encode
-        new_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
-
-        // image for secret message
-        new_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
-
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
-        tab_butts.innerHTML += new_butt;
-        tab_cont.innerHTML += new_cont;
+        var new_sekrit_cont = "<div data-id=\"6\">";
+
+        // hidetext encode
+        new_sekrit_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
+
+        // image for secret message
+        new_sekrit_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
+
+        // Another link to github
+        new_sekrit_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
+
+        // Secret Encoding tab
+        var new_sekrit_butt = "<a class=\"tab-link\" data-id=\"6\">Secret Encoding</a>";
+
+        new_cont += "</div>";
+        new_sekrit_cont += "</div>";
+        tab_butts.innerHTML += new_butt + new_sekrit_butt;
+        tab_cont.innerHTML += new_cont + new_sekrit_cont;
 
         for (var i = 0; i < onOffOptions.length; i++) {
             var id = onOffOptions[i][0];
