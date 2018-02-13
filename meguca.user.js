@@ -26,7 +26,7 @@
                           ["sekritPosting", "Secret Posting"],
                           ["megucaplayerOption", "Show music player"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
-                            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心何日口二手山木糸羽雨辵水金色無"];
+                            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
     // Add custom options here if needed
