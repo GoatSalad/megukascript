@@ -731,6 +731,11 @@
             addToName(post, " (Dumb haiku poster / 'wait anon' is all she says / Don't wait, run away!)");
             return;
         }
+        // virus post
+        if (text.match(/virus/i) != null) {
+            addToName(post, " (virus post do not read)");
+            return;
+        }
         // lowercaseposters
         var uppers = findMultipleShitFromAString(text, /[A-Z]/g);
         var Yous = findMultipleShitFromAString(text, />>\d* \(You\)/g);
