@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.9
+// @version     1.9.10
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
