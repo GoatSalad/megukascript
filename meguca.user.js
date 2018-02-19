@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.11
+// @version     1.9.12
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -192,7 +192,7 @@
                         if (text.indexOf(nipponeseIndex[0][j]) != -1) 
                             text = nipponeseIndex[0][j] == "/" || nipponeseIndex[0][j] == "+" ? text.replace(new RegExp("\\" + nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]) : text.replace(new RegExp(nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]);
                     }
-                    document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
+                    document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````\n' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
                     var evt = document.createEvent('HTMLEvents');evt.initEvent('input', false, true);document.getElementById('text-input').dispatchEvent(evt);
                 } else {
                     // encode text in an image
