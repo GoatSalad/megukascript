@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.10
+// @version     1.9.11
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -62,10 +62,18 @@
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
-            var decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
-            for (var j = decide.length - 1; j >= 0; j--) {
-                parseDecide(post, decide[j]);
-            }
+        	var decide;
+            decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+            if (decide.length != 0) {
+	            for (var j = decide.length - 1; j >= 0; j--) {
+	                parseDecide(post, decide[j]);
+	            }
+	        } else {
+	        	decide = findMultipleShitFromAString(post.innerHTML, /(<blockquote>|<br>)([^><]*) <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+	            for (var j = decide.length - 1; j >= 0; j--) {
+	                parseDecide(post, decide[j]);
+	            }
+	        }
         }
         if (currentlyEnabledOptions.has("sekritPosting")) {
             var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code><del>([^#<>\[\]]*)<\/del><code class=\"code-tag\"><\/code>/g);
@@ -380,23 +388,43 @@
     }
 
     function parseDecide(post, decide) {
-        var options = decide[1].split(",");
-        var n = decide[3];
-        var m = decide[4];
+    	if (decide.length == 6) {
+	        var options = decide[2].split(",");
+	        var n = decide[4];
+	        var m = decide[5];
 
-        var before = post.innerHTML.substring(0, decide.index);
-        var after = post.innerHTML.substring(decide.index + decide[0].length);
+	        var before = post.innerHTML.substring(0, decide.index);
+	        var after = post.innerHTML.substring(decide.index + decide[0].length);
 
-        if (options.length != n || n == 1) return;
-        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
-        var newInner = options.toString();
-        var retreivedRoll;
-        if (decide[2] == null) {
-            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
-        } else {
-            retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
-        }
-        post.innerHTML = before + newInner + retreivedRoll + after;
+	        if (options.length != n || n == 1) return;
+	        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
+	        var newInner = options.toString();
+	        var retreivedRoll;
+	        if (decide[3] == null) {
+	            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+	        } else {
+	            retreivedRoll = " <strong" + decide[3] + ">#d" + n + " (" + m + ")</strong>";
+	        }
+	        post.innerHTML = before + decide[1] + newInner + retreivedRoll + after;
+	    } else if (decide.length == 5) {
+	        var options = decide[1].split(",");
+	        var n = decide[3];
+	        var m = decide[4];
+
+	        var before = post.innerHTML.substring(0, decide.index);
+	        var after = post.innerHTML.substring(decide.index + decide[0].length);
+
+	        if (options.length != n || n == 1) return;
+	        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
+	        var newInner = options.toString();
+	        var retreivedRoll;
+	        if (decide[2] == null) {
+	            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+	        } else {
+	            retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
+	        }
+	        post.innerHTML = before + newInner + retreivedRoll + after;
+	    }
     }
 
     function parseSecretPost(post, secret) {
