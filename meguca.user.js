@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.12
+// @version     1.9.13
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -63,17 +63,15 @@
         }
         if (currentlyEnabledOptions.has("decideOption")) {
         	var decide;
-            decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
-            if (decide.length != 0) {
-	            for (var j = decide.length - 1; j >= 0; j--) {
-	                parseDecide(post, decide[j]);
-	            }
-	        } else {
-	        	decide = findMultipleShitFromAString(post.innerHTML, /(<blockquote>|<br>)([^><]*) <strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
-	            for (var j = decide.length - 1; j >= 0; j--) {
-	                parseDecide(post, decide[j]);
-	            }
-	        }
+            decide = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\]\s<strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+            for (var j = decide.length - 1; j >= 0; j--) {
+                parseDecide(post, decide[j], false);
+            }
+
+        	decide = findMultipleShitFromAString(post.innerHTML, /(?:<blockquote>|<br>)([^><]*)(\s|<br>)<strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
+            for (var j = decide.length - 1; j >= 0; j--) {
+                parseDecide(post, decide[j], true);
+            }
         }
         if (currentlyEnabledOptions.has("sekritPosting")) {
             var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code><del>([^#<>\[\]]*)<\/del><code class=\"code-tag\"><\/code>/g);
@@ -387,44 +385,35 @@
         }
     }
 
-    function parseDecide(post, decide) {
-    	if (decide.length == 6) {
-	        var options = decide[2].split(",");
-	        var n = decide[4];
-	        var m = decide[5];
+    function parseDecide(post, decide, isSmart) {
+        console.log(decide);
+        var offset = (isSmart) ? 1 : 0;
 
-	        var before = post.innerHTML.substring(0, decide.index);
-	        var after = post.innerHTML.substring(decide.index + decide[0].length);
+        var options = decide[1].split(",");
+        var n = decide[3 + offset];
+        var m = decide[4 + offset];
 
-	        if (options.length != n || n == 1) return;
-	        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
-	        var newInner = options.toString();
-	        var retreivedRoll;
-	        if (decide[3] == null) {
-	            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
-	        } else {
-	            retreivedRoll = " <strong" + decide[3] + ">#d" + n + " (" + m + ")</strong>";
-	        }
-	        post.innerHTML = before + decide[1] + newInner + retreivedRoll + after;
-	    } else if (decide.length == 5) {
-	        var options = decide[1].split(",");
-	        var n = decide[3];
-	        var m = decide[4];
+        var before = post.innerHTML.substring(0, decide.index);
+        var after = post.innerHTML.substring(decide.index + decide[0].length);
 
-	        var before = post.innerHTML.substring(0, decide.index);
-	        var after = post.innerHTML.substring(decide.index + decide[0].length);
+        if (options.length != n || n == 1) return;
+        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
+        var newInner = options.toString();
+        var retreivedRoll;
+        if (decide[2 + offset] == null) {
+            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
+        } else {
+            retreivedRoll = " <strong" + decide[2 + offset] + ">#d" + n + " (" + m + ")</strong>";
+        }
 
-	        if (options.length != n || n == 1) return;
-	        options[m-1] = "<strong class=\"decision_roll\">" + options[m-1] + "</strong>";
-	        var newInner = options.toString();
-	        var retreivedRoll;
-	        if (decide[2] == null) {
-	            retreivedRoll = " <strong>#d" + n + " (" + m + ")</strong>";
-	        } else {
-	            retreivedRoll = " <strong" + decide[2] + ">#d" + n + " (" + m + ")</strong>";
-	        }
-	        post.innerHTML = before + newInner + retreivedRoll + after;
-	    }
+        if (isSmart) {
+            if (decide[0].substring(0,3) === "<br") before += "<br>";
+            else before += "<blockquote>";
+
+            newInner += decide[2];
+        }
+
+        post.innerHTML = before + newInner + retreivedRoll + after;
     }
 
     function parseSecretPost(post, secret) {
