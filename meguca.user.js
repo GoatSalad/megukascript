@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.13
+// @version     1.9.14
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -386,7 +386,6 @@
     }
 
     function parseDecide(post, decide, isSmart) {
-        console.log(decide);
         var offset = (isSmart) ? 1 : 0;
 
         var options = decide[1].split(",");
