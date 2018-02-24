@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     1.9.14
+// @version     2.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -14,10 +14,8 @@
 
     // Things the user can turn on or off, add your new feature to this list
     // For more complicated options, add them to the hackLatsOptions and getCurrentOptions functions
-    const onOffOptions = [["diceOption", "Dice coloring"],
-                          ["edenOption", "Eden Now Playing Banner"],
+    const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                           ["pyuOption", "Pyu Coloring~"],
-                          ["rouletteOption", "Roulette"],
                           ["decideOption", "Decision Coloring"],
                           ["dumbPosters", "Dumb xposters"],
                           ["dumbblanc", "dumb blancposters, not cute"],
@@ -43,22 +41,10 @@
                 parseShares(post, shares[j]);
             }
         }
-        if (currentlyEnabledOptions.has("diceOption")) {
-            var dice = findMultipleShitFromAString(post.innerHTML, /<strong>#(\d*)d(\d+) \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
-            for (var j = dice.length - 1; j >= 0; j--) {
-                parseRoll(post, dice[j]);
-            }
-        }
         if (currentlyEnabledOptions.has("pyuOption")) {
             var pyu = findMultipleShitFromAString(post.innerHTML, /<strong>#pyu \(([\d+]*)\)<\/strong>/g);
             for (var j = pyu.length - 1; j >= 0; j--) {
                 parsePyu(post, pyu[j]);
-            }
-        }
-        if (currentlyEnabledOptions.has("rouletteOption")) {
-            var rouletteDice = findMultipleShitFromAString(post.innerHTML, /#roulette <strong>#d[1-6] \((?:[\d +]* )*=? ?(\d+)\)<\/strong>/g);
-            for (var j = rouletteDice.length - 1; j >= 0; j--) {
-                parseRoulette(post, rouletteDice[j]);
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
@@ -251,16 +237,7 @@
         var css = document.createElement("style");
         css.type = "text/css";
         // calculate lengths
-        css.innerHTML = ".super_roll { animation: pink_blinker 0.4s linear " + getIterations(0.4) + "; color: pink; } @keyframes pink_blinker { 50% { color: deeppink } }" +
-            ".lewd_roll { animation: lewd_blinker 0.7s linear " + getIterations(0.7) + "; color: pink; } @keyframes lewd_blinker { 50% { color: #FFD6E1 } }" +
-            ".kuso_roll { animation: brown_blinker 1s linear " + getIterations(1) + "; color: #825025; } @keyframes brown_blinker { 50% { opacity: 0.7 } }" +
-            ".dubs_roll { animation: blue_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes blue_blinker { 50% { color: blue } }" +
-            ".trips_roll { animation: yellow_blinker 0.4s linear " + getIterations(0.4) + "; color: yellow; } @keyframes yellow_blinker { 50% { color: darkorange } }" +
-            ".quads_roll { animation: green_blinker 0.4s linear " + getIterations(0.4) + "; color: lime; } @keyframes green_blinker { 50% { color: darkgreen } }" +
-            ".rainbow_roll { animation: rainbow_blinker 2s linear " + getIterations(2) + "; color: red; } @keyframes rainbow_blinker { 14% {color: orange} 28% {color: yellow} 42% {color: green} 57% {color: blue} 71% {color: indigo} 85% {color: violet} }" +
-            ".dangerous_roll {font-size: 110%; color: #f00000; }" +
-            ".dead_fuck { color: #e55e5e; }" +
-            ".sekrit_text { color: #FFDC91; }" +
+        css.innerHTML = ".sekrit_text { color: #FFDC91; }" +
             ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
             ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: mediumpurple; } @keyframes planeptune_blinker { 50% { color: #fff} }"+
             ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
@@ -299,79 +276,13 @@
         return vibrationDuration / 0.5;
     }
 
-    function readPostsForRolls() {
+    function readPostsForData() {
         var posts = document.getElementsByClassName('post-container');
         for (var i = 0; i < posts.length; i++) {
             var post = posts[i];
             handlePost(post);
         }
     }
-
-    function parseRoll(post, die) {
-        var n = die[1];
-        var m = die[2];
-        var x = die[3];
-
-        var before = post.innerHTML.substring(0, die.index);
-        var after = post.innerHTML.substring(die.index + die[0].length);
-
-        var rollHTML = getRollHTML(n, m, x);
-        if (rollHTML != "") {
-            post.innerHTML = before + rollHTML + die[0].substring(8) + after;
-        }
-    }
-
-    function getRollHTML(numberOfDice, facesPerDie, result) {
-        var divided = (""+result).split(""); //Splits the number into single digits to check for dubs, trips, etc
-        if (numberOfDice == "") {
-            numberOfDice = 1;
-        }
-        var maxRoll = numberOfDice * facesPerDie; // because javascript just lets you multiply strings together...
-        // do nothing for totals below 10, or for n d1s
-        if (maxRoll < 10 || facesPerDie == 1) {
-            return "";
-        }
-
-        if (numberOfDice == 1 && facesPerDie == result && result == 7777) { // Marrying navy-tan!
-            return "<strong class=\"rainbow_roll\">Congrats! You get to marry navy-tan! ";
-        } else if (maxRoll == result) {
-            return "<strong class=\"super_roll\">";
-        } else if (result == 1) {
-            return "<strong class=\"kuso_roll\">";
-        } else if (result == 69 || result == 6969) {
-            return "<strong class=\"lewd_roll\">";
-        } else if (checkEm(divided)) {
-            switch (divided.length) {
-                case 2:
-                    return "<strong class=\"dubs_roll\">";
-                case 3:
-                    return "<strong class=\"trips_roll\">";
-                case 4:
-                    return "<strong class=\"quads_roll\">";
-                default: // QUINTS!!!
-                    return "<strong class=\"rainbow_roll\">";
-            }
-        }
-        return "";
-    }
-
-    function parseRoulette(post, die) {
-        var postEnding = post.innerHTML.substring(post.innerHTML.length-2);
-        var before = post.innerHTML.substring(0, die.index);
-        var n =String(die).substring(20,21);
-        var after = "("+die[1]+"/"+n+")"+post.innerHTML.substring(die.index +25);
-
-
-        if (die[1] == 1)
-            post.innerHTML = before + "<strong class=\"dead_fuck\"> #roulette " + after;
-        else
-            post.innerHTML = before + "<strong> #roulette " + after;
-
-        // if post ends in "g>" then the strong tag is already set
-        if(die[1] == 1 && postEnding != "g>")
-            post.innerHTML += "\n <strong class=\"dangerous_roll\"> USER WAS KILLED FOR THIS ROLL</strong>";
-    }
-
 
     function parsePyu(post, pyu) {
         var n = pyu[1];
@@ -463,27 +374,7 @@
         if (options.length != n || n == 1 || n == 0) return;
 
         for (var j = 0; j < shareValues.length; j++) {
-            var rollHTML = getRollHTML(1, maxShares, shareValues[j]);
             var formattedRoll = " (" + shareValues[j] + "/" + maxShares + ")";
-            // format the dice if needed
-            if (rollHTML != "") {
-                if (shareValues[j] == highestValue) {
-                    // if the roll was formatted, the winning share format needs to be continued after the roll
-                    if(options[j].match(/(^|\W)planeptune($|\W)(?!\w)/i)){
-                        formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"planeptune_wins\">)</strong><strong>";
-                    }else if(options[j].match(/(^|\W)lastation($|\W)(?!\w)/i)){
-                        formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lastation_wins\">)</strong><strong>";
-                    }else if(options[j].match(/(^|\W)lowee($|\W)(?!\w)/i)){
-                        formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"lowee_wins\">)</strong><strong>";
-                    }else if(options[j].match(/(^|\W)leanbox($|\W)(?!\w)/i)){
-                        formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"leanbox_wins\">)</strong><strong>";
-                    }else{
-                        formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong class=\"decision_roll\">)</strong><strong>";
-                    }
-                } else {
-                    formattedRoll = " (</strong>" + rollHTML + shareValues[j] + "/" + maxShares + "</strong><strong>)";
-                }
-            }
 
             // format the options
             if (shareValues[j] == highestValue) {
@@ -498,10 +389,12 @@
                 }else{
                     options[j] = "</strong><strong class=\"decision_roll\">" + options[j] + formattedRoll + "</strong><strong>";
                 }
+
             } else {
                 options[j] = options[j] + formattedRoll;
             }
         }
+
         var newInner = options.join("<br>");
         if (before.substring(before.length-4) != "<br>" && before.substring(before.length-4) != "ote>") {
             before += "<br>";
@@ -794,7 +687,7 @@
     function setup() {
         getCurrentOptions();
         insertCuteIntoCSS();
-        readPostsForRolls();
+        readPostsForData();
         if (document.getElementById("thread-container") != null) 
             setObservers();
         hackLatsOptions();
