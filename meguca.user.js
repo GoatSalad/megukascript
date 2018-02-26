@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.0
+// @version     2.0.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -22,14 +22,15 @@
                           ["sharesOption", "Shares Formatting"],
                           ["screamingPosters", "Vibrate screaming posts"],
                           ["sekritPosting", "Secret Posting"],
-                          ["imgsekritPosting", "Image Secret Posting"],
+                          ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
+                          ["enablemegucaplayer","Enable music player"],
                           ["megucaplayerOption", "Show music player"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
     // Add custom options here if needed
-    var flashingDuration = "infinite";
+    var flashingDuration = 60;
     var vibrationDuration = 20;
 
     // For most new features, you'll want to put a call to your function in this function
@@ -152,13 +153,17 @@
         // flashing duration
         document.getElementById("flashing").value = flashingDuration;
         document.getElementById("flashing").onchange = function(){
-            localStorage.setItem(this.id, this.value);
+            var num = Number(this.value);
+            if (Number.isNaN(num)) num = 60;
+            localStorage.setItem(this.id, (this.value > 60) ? 60 : this.value);
         };
 
         // vibration duration
         document.getElementById("vibration").value = vibrationDuration;
         document.getElementById("vibration").onchange = function(){
-            localStorage.setItem(this.id, this.value);
+            var num = Number(this.value);
+            if (Number.isNaN(num)) num = 60;
+            localStorage.setItem(this.id, (this.value > 60) ? 60 : this.value);
         };
         document.querySelector("#hidetext").addEventListener("keyup", function(event) {
             if(event.key !== "Enter") return; // Use `.key` instead.
@@ -264,16 +269,16 @@
 
     function getIterations(period) {
         if (flashingDuration == "infinite") {
-            return "infinite";
+            return 60 / period;
         }
         return flashingDuration / period;
     }
 
     function getVibrationIterations() {
         if (vibrationDuration == "infinite") {
-            return "infinite";
+            return 120;
         }
-        return vibrationDuration / 0.5;
+        return vibrationDuration * 2;
     }
 
     function readPostsForData() {
@@ -691,7 +696,7 @@
         if (document.getElementById("thread-container") != null) 
             setObservers();
         hackLatsOptions();
-        mgcPl_setupPlaylist();
+        if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
         if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
     }
 
