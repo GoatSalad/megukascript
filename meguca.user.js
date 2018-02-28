@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.0.1
+// @version     2.1.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -510,13 +510,10 @@
                                 url: img.src,
                                 responseType: 'blob',
                                 onload: function(response) {
-                                    var fr = new FileReader();
-                                    fr.onload = function(){
-                                        var msg = parseSecretImage(img, this.result);
-                                        parsedImages[img.src] = msg;
-                                    };
-
-                                    fr.readAsArrayBuffer(response.response); // async call
+                                    // max message length is 999 bytes + 9 byte header
+                                    var str = response.responseText.substring(response.responseText.length-1008, response.responseText.length);
+                                    var msg = parseSecretImage(img, str);
+                                    parsedImages[img.src] = msg;
                                 }
                             });
                         };
@@ -528,7 +525,7 @@
         }
     }
 
-    function parseSecretImage(img, data) {
+    function parseSecretImage(img, str) {
         // the message is added to the end of the image
         // image bytes
         // text of message
@@ -536,17 +533,24 @@
         // "secret"
 
         // check if this contains a secret message
-        var td = new TextDecoder();
-        var header = td.decode(data.slice(data.byteLength - 6, data.byteLength));
+        var header = str.substring(str.length - 6, str.length);
         if (header == "secret") {
             // the next three characters represent the length
-            var length = td.decode(data.slice(data.byteLength - 9, data.byteLength - 6));
+            var length = str.substring(str.length - 9, str.length - 6);
             length = parseInt(length, 10);
             if (isNaN(length)) {
-                return;
+                return null;
+            }
+
+            // convert the rest of the string into an arraybuffer
+            var buf = new ArrayBuffer(str.length - 9);
+            var bufView = new Uint8Array(buf);
+            for (var i = 0; i < str.length - 9; i++) {
+                bufView[i] = str.charCodeAt(i);
             }
             // now read the message
-            var message = td.decode(data.slice(data.byteLength - 9 - length, data.byteLength - 9));
+            var td = new TextDecoder();
+            var message = td.decode(buf.slice(buf.byteLength - length, buf.byteLength));
             addMessageToPost(img, message);
             return message;
         }
