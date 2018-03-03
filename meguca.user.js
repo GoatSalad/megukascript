@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.0.1
+// @version     2.2
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -32,6 +32,7 @@
     // Add custom options here if needed
     var flashingDuration = 60;
     var vibrationDuration = 20;
+    const defaultFiletypes = ".jpg .png .gif";
 
     // For most new features, you'll want to put a call to your function in this function
     // This will be called multiple times per post, so handlers should be idempotent
@@ -97,6 +98,9 @@
 
         // vibration duration
         new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
+
+        // image stealing
+        new_cont += "<span>Steal all files ending with <span><input type=\"textbox\" name=steal_filetypes id=steal_filetypes><button type=\"button\" id=\"stealButton\">Steal files</button><br>";
 
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
@@ -165,12 +169,19 @@
             if (Number.isNaN(num)) num = 60;
             localStorage.setItem(this.id, (this.value > 60) ? 60 : this.value);
         };
+
         document.querySelector("#hidetext").addEventListener("keyup", function(event) {
             if(event.key !== "Enter") return; // Use `.key` instead.
             document.querySelector("#secretButton").click(); // Things you want to do.
             event.preventDefault(); // No need to `return false;`.
         });
-        document.getElementById("secretButton").onclick = function(){
+
+        document.getElementById("steal_filetypes").value = defaultFiletypes;
+        document.getElementById("stealButton").onclick = function() {
+            downloadAll();
+        };
+
+        document.getElementById("secretButton").onclick = function() {
             var fileInput = document.getElementById("secret_image");
             if (document.getElementById('text-input')!=null) {
                 if (fileInput.files.length == 0) {
@@ -869,6 +880,21 @@
             slider.value = 0;
         else
             slider.value = mgcPl_meguca_player.currentTime;
+    }
+
+    function downloadAll() {
+        var posts = document.getElementById("thread-container").children;
+        var filetypes = document.getElementById("steal_filetypes").value.split(" ");
+        for (var i = 0; i < posts.length; i++) {
+            if (posts[i].tagName.toLowerCase() === "article" &&
+                posts[i].children[2].tagName.toLowerCase() === "figcaption") {
+                var anchor = posts[i].children[2].children[3];
+                for (var j = 0; j < filetypes.length; j++)
+                    if (anchor.href.endsWith(filetypes[j]))
+                        anchor.click();
+            }
+        }
+
     }
 
     setup();
