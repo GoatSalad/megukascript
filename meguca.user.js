@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.2.0
+// @version     2.2.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -653,6 +653,13 @@
         if (text.match(dumbRegex) != null) {
             var posterType = text.match(dumbRegex)[1];
             addToName(post, " (dumb '" + posterType + "' poster)");
+            return;
+        }
+        // cuteposterposters
+        var cuteRegex = /^(?:>>\d* (?:\(You\) )?# )*(cute ?.{0,20}posters?)$/i;
+        if (text.match(cuteRegex) != null) {
+            var posterType = text.match(cuteRegex)[1];
+            addToName(post, " (cute '" + posterType + "' poster)");
             return;
         }
         // wait anon
