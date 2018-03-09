@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.2.1
+// @version     2.3.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -24,7 +24,8 @@
                           ["sekritPosting", "Secret Posting"],
                           ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
                           ["enablemegucaplayer","Enable music player"],
-                          ["megucaplayerOption", "Show music player"]];
+                          ["megucaplayerOption", "Show music player"],
+                          ["imagePaste", "Upload pasted images"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -711,6 +712,48 @@
         name.parentNode.insertBefore(newText, name.nextSibling);
     }
 
+    function setupImagePaste() {
+        var tc = document.getElementById("thread-container");
+        tc.addEventListener('paste', function(e){
+            var files = e.clipboardData.files;
+            // check if a file was pasted
+            if (files.length == 1) {
+                var possibleInputs = document.getElementsByName("image");
+                var realInput;
+                for (var i = 0; i < possibleInputs.length; i++) {
+                    if (possibleInputs[i].offsetParent != null) {
+                        realInput = possibleInputs[i];
+                        break;
+                    }
+                }
+                if (realInput == undefined) {
+                    // reply isn't started yet, click the button
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent('click', true, false);
+                    evt.which = 1;
+                    var replyButton = document.querySelector("aside.posting > a");
+                    replyButton.dispatchEvent(evt);
+
+                    // try to find the input field again
+                    possibleInputs = document.getElementsByName("image");
+                    for (var i = 0; i < possibleInputs.length; i++) {
+                        if (possibleInputs[i].offsetParent != null) {
+                            realInput = possibleInputs[i];
+                            break;
+                        }
+                    }
+                }
+
+                if (realInput != undefined) {
+                    realInput.files = files;
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent('change', false, true);
+                    realInput.dispatchEvent(evt);
+                }
+            }
+        });
+    }
+
     function setup() {
         getCurrentOptions();
         insertCuteIntoCSS();
@@ -720,6 +763,7 @@
         hackLatsOptions();
         if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
         if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
+        if (currentlyEnabledOptions.has("imagePaste")) setupImagePaste();
     }
 
     var mgcPl_offset = [];
