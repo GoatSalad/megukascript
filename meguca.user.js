@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.3.0
+// @version     2.3.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -40,7 +40,7 @@
     function handlePost(post) {
         if (currentlyEnabledOptions.has("sharesOption")) {
             var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
-            for (var j = shares.length - 1; j >= 0; j--) {
+            for (var j = shares.length - 1; j >= Math.max(0,shares.length-4); j--) {
                 parseShares(post, shares[j]);
             }
         }
