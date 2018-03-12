@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.3.1
+// @version     2.4.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -25,7 +25,8 @@
                           ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
                           ["enablemegucaplayer","Enable music player"],
                           ["megucaplayerOption", "Show music player"],
-                          ["imagePaste", "Upload pasted images"]];
+                          ["imagePaste", "Upload pasted images"],
+                          ["annoyingFormatting", "Annoying formatting button"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -466,7 +467,13 @@
                 var observer2 = new MutationObserver(function(mutations2) {
                     mutations2.forEach(function(mutation2) {
                         // Don't continue while still editing
-                        if (postItself.getAttribute("class").includes("editing")) return;
+                        if (postItself.getAttribute("class").includes("editing")) {
+                            // add Format button to posts the user is making
+                            if (currentlyEnabledOptions.has("annoyingFormatting") && postItself.getAttribute("class").includes("reply-form")) {
+                                addFormatButton(postItself);
+                            }
+                            return;
+                        }
                         // handlesPost (works for others posters)
                         handlePost(postContent);
                         mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
@@ -535,6 +542,36 @@
             });
             secretObserver.observe(document.getElementById("hover-overlay"), secretConfig);
         }
+    }
+
+    function addFormatButton(post) {
+        if (document.getElementById("format-button")) {
+            // button already exists
+            return;
+        }
+        var button = document.createElement("input");
+        button.name = "format";
+        button.value = "Format";
+        button.type = "button";
+        button.id = "format-button";
+        button.onclick = formatPostText;
+
+        var controls = document.getElementById("post-controls");
+        controls.appendChild(button);
+    }
+
+    function formatPostText() {
+        var input = document.getElementById("text-input");
+        input.value = input.value.split(" ").map(formatWord).join(" ");
+        var evt = document.createEvent('HTMLEvents');
+        evt.initEvent('input', false, true);
+        input.dispatchEvent(evt);
+    }
+
+    function formatWord(s) {
+        // pick a random format and add it to both sides of the word
+        var format = ["~~","**","__","``"][Math.floor(Math.random()*4)];
+        return format + s + format;
     }
 
     function parseSecretImage(img, str) {
