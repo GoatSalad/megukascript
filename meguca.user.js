@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.4.6
+// @version     2.4.6.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -328,6 +328,7 @@
         } catch (err) {
             result = '???';
         }
+        if (isNaN(result)) result = '???';
 
         var before = post.innerHTML.substring(0, math.index);
         var after = post.innerHTML.substring(math.index + math[0].length);
