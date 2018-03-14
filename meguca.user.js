@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.4.6.2
+// @version     2.4.6.3
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -53,7 +53,7 @@
             }
         }
         if (currentlyEnabledOptions.has("mathOption")) {
-            var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*()., ]*(?:pow)*(?:log)*)*)\)/g);
+            var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*%()., ]*(?:pow)*(?:log)*)*)\)/g);
             for (var j = math.length - 1; j >= 0; j--) {
                 parseMath(post, math[j]);
             }
