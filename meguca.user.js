@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.4.5
+// @version     2.4.6
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -53,7 +53,7 @@
             }
         }
         if (currentlyEnabledOptions.has("mathOption")) {
-            var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*(), ]*(?:pow)*)*)\)/g);
+            var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*(), ]*(?:pow)*(?:log)*)*)\)/g);
             for (var j = math.length - 1; j >= 0; j--) {
                 parseMath(post, math[j]);
             }
@@ -321,13 +321,16 @@
     }
 
     function parseMath(post, math) {
-        var expr = math[1].replace(/pow/g, 'Math.pow')
-        var result = eval(expr);
+        var expr = math[1].replace(/pow/g, 'Math.pow').replace(/log/g, 'Math.log');
+        var result;
+        try {
+            result = eval(expr);
+        } catch (err) {
+            result = '???';
+        }
+
         var before = post.innerHTML.substring(0, math.index);
         var after = post.innerHTML.substring(math.index + math[0].length);
-
-        if (isNaN(result)) result = "???";
-
         var mathHTML = "<strong>" + math[0].substring(0, 5) + " " + math[0].substring(5, math[0].length - 1) + " = " + result + ")</strong>";
         post.innerHTML = before + mathHTML + after;
     }
