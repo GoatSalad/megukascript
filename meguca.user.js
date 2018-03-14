@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.4.0
+// @version     2.4.5
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -26,7 +26,8 @@
                           ["enablemegucaplayer","Enable music player"],
                           ["megucaplayerOption", "Show music player"],
                           ["imagePaste", "Upload pasted images"],
-                          ["annoyingFormatting", "Annoying formatting button"]];
+                          ["annoyingFormatting", "Annoying formatting button"],
+                          ["mathOption", "Enables math parsing"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -49,6 +50,12 @@
             var pyu = findMultipleShitFromAString(post.innerHTML, /<strong>#pyu \(([\d+]*)\)<\/strong>/g);
             for (var j = pyu.length - 1; j >= 0; j--) {
                 parsePyu(post, pyu[j]);
+            }
+        }
+        if (currentlyEnabledOptions.has("mathOption")) {
+            var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*(), ]*(?:pow)*)*)\)/g);
+            for (var j = math.length - 1; j >= 0; j--) {
+                parseMath(post, math[j]);
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
@@ -304,7 +311,6 @@
 
     function parsePyu(post, pyu) {
         var n = pyu[1];
-        var nsub;
         var before = post.innerHTML.substring(0, pyu.index);
         var after = post.innerHTML.substring(pyu.index + pyu[0].length);
 
@@ -313,6 +319,19 @@
             post.innerHTML = before + pyuHTML + after;
         }
     }
+
+    function parseMath(post, math) {
+        var expr = math[1].replace(/pow/g, 'Math.pow')
+        var result = eval(expr);
+        var before = post.innerHTML.substring(0, math.index);
+        var after = post.innerHTML.substring(math.index + math[0].length);
+
+        if (isNaN(result)) result = "???";
+
+        var mathHTML = "<strong>" + math[0].substring(0, 5) + " " + math[0].substring(5, math[0].length - 1) + " = " + result + ")</strong>";
+        post.innerHTML = before + mathHTML + after;
+    }
+
 
     function parseDecide(post, decide, isSmart) {
         var offset = (isSmart) ? 1 : 0;
