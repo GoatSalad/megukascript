@@ -24,7 +24,7 @@
                           ["sekritPosting", "Secret Posting"],
                           ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
                           ["enablemegucaplayer","Enable music player"],
-                          ["megucaplayerOption", "Show music player"],
+                          ["megucaplayerOption", "Show music player<br>"],
                           ["imagePaste", "Upload pasted images"],
                           ["annoyingFormatting", "Annoying formatting button"],
                           ["mathOption", "Enables math parsing"],
@@ -61,7 +61,7 @@
             }
         }
         if (currentlyEnabledOptions.has("chuuOption")) {
-            var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\((\d*)\)/g);
+            var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\( (?:>>)??(\d*) ?\)/g);
             for (var j = chuu.length - 1; j >= 0; j--) {
                 parseChuu(post, chuu[j]);
             }
