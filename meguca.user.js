@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.4.6.3
+// @version     2.5
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -27,7 +27,8 @@
                           ["megucaplayerOption", "Show music player"],
                           ["imagePaste", "Upload pasted images"],
                           ["annoyingFormatting", "Annoying formatting button"],
-                          ["mathOption", "Enables math parsing"]];
+                          ["mathOption", "Enables math parsing"],
+                          ["chuuOption", "Enables receivement of chuu~s"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -36,6 +37,7 @@
     var flashingDuration = 60;
     var vibrationDuration = 20;
     const defaultFiletypes = ".jpg .png .gif";
+    var chuuCount = 0;
 
     // For most new features, you'll want to put a call to your function in this function
     // This will be called multiple times per post, so handlers should be idempotent
@@ -56,6 +58,12 @@
             var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*%()., ]*(?:pow)*(?:log)*)*)\)/g);
             for (var j = math.length - 1; j >= 0; j--) {
                 parseMath(post, math[j]);
+            }
+        }
+        if (currentlyEnabledOptions.has("chuuOption")) {
+            var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\((\d*)\)/g);
+            for (var j = chuu.length - 1; j >= 0; j--) {
+                parseChuu(post, chuu[j]);
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
@@ -109,10 +117,13 @@
         new_cont += "<input type=\"textbox\" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>";
 
         // image stealing
-        new_cont += "<span>Steal all files ending with <span><input type=\"textbox\" name=steal_filetypes id=steal_filetypes><button type=\"button\" id=\"stealButton\">Steal files</button><br>";
+        new_cont += "<span>Steal all files ending with </span><input type=\"textbox\" name=steal_filetypes id=steal_filetypes><button type=\"button\" id=\"stealButton\">Steal files</button><br>";
 
         // Linking to github
         new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
+
+        // Chuu counter
+        new_cont += "<br>You have received <span id=\"chuu-counter\">" + chuuCount + "</span> chuu~'s";
 
         var new_sekrit_cont = "<div data-id=\"6\">";
 
@@ -263,6 +274,7 @@
         css.type = "text/css";
         // calculate lengths
         css.innerHTML = ".sekrit_text { color: #FFDC91; }" +
+            ".lewd_color { animation: lewd_blinker 0.7s linear " + getIterations(0.7) + "; color: pink; } @keyframes lewd_blinker { 50% { color: #FFD6E1 } }" +
             ".decision_roll { animation: decision_blinker 0.4s linear 2; color: lightgreen; } @keyframes decision_blinker { 50% { color: green } }" +
             ".planeptune_wins { animation: planeptune_blinker 0.6s linear " + getIterations(0.6) + "; color: mediumpurple; } @keyframes planeptune_blinker { 50% { color: #fff} }"+
             ".lastation_wins { animation: lastation_blinker 0.6s linear " + getIterations(0.6) + "; color: #000; } @keyframes lastation_blinker { 50% { color: #fff} }"+
@@ -336,6 +348,34 @@
         post.innerHTML = before + mathHTML + after;
     }
 
+    function parseChuu(post, chuu) {
+        var postNum = chuu[1];
+        var kissedPost = document.getElementById("p" + postNum);
+
+        if (kissedPost === null || kissedPost === undefined) return;
+
+        var nametag = kissedPost.children[1].getElementsByTagName("B")[0];
+
+        var before = post.innerHTML.substring(0, chuu.index);
+        var after = post.innerHTML.substring(chuu.index + chuu[0].length);
+        var chuuHTML = "<strong";
+
+        // Has an (You) => You've been kissed!
+        if (nametag.getElementsByTagName("I").length > 0) {
+            var ownName = post.parentNode.children[1].getElementsByTagName("B")[0];
+            // Don't chuu yourself
+            if (ownName.getElementsByTagName("I").length > 0) return;
+
+            chuuHTML += " class=\"lewd_color\"";
+            chuuCount++;
+            localStorage.setItem("chuuCount", chuuCount);
+            document.getElementById("chuu-counter").innerHTML = chuuCount;
+            alert("chuu~");
+        }
+
+        chuuHTML += ">" + chuu[0] + "</strong>";
+        post.innerHTML = before + chuuHTML + after;
+    }
 
     function parseDecide(post, decide, isSmart) {
         var offset = (isSmart) ? 1 : 0;
@@ -666,6 +706,9 @@
             // assume inifinity if it's not a number
             vibrationDuration = "infinite";
         }
+
+        chuuCount = parseInt(localStorage.getItem("chuuCount"));
+        if (isNaN(chuuCount)) chuuCount = 0;
     }
 
     function setUpEdenBanner() {
