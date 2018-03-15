@@ -51,6 +51,10 @@ Music player for all the audio files currently posted (and loaded on the page) o
 Toggle the checkbox at the userscript settings at any time to hide or show the music player. You may drag it across the screen by holding on its titlebar. <br>
 The player will automatically list all available music and play them on order, looping around when the playlist reaches its end. Double-clicks on songs works fine and so do all the buttons. Try playing around with it.
 
+### Chuuuuu~
+"Chuu~" any user by typing "#chuu([postnumber])"<br>
+It will still work if there are spaces inside the brackets like in "#chuu( 1231233 )" but not if it includes the ">>".<br>
+Check how many chuu~'s you have received on the settings tab.
 
 ## Installation
 <ul>
