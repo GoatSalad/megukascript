@@ -119,11 +119,11 @@
         // image stealing
         new_cont += "<span>Steal all files ending with </span><input type=\"textbox\" name=steal_filetypes id=steal_filetypes><button type=\"button\" id=\"stealButton\">Steal files</button><br>";
 
-        // Linking to github
-        new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
-
         // Chuu counter
         new_cont += "<br>You have received <span id=\"chuu-counter\">" + chuuCount + "</span> chuu~'s";
+
+        // Linking to github
+        new_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
         var new_sekrit_cont = "<div data-id=\"6\">";
 
@@ -373,7 +373,7 @@
             alert("chuu~");
         }
 
-        chuuHTML += ">" + chuu[0] + "</strong>";
+        chuuHTML += ">#chuu~(" + chuu[1] + ")</strong>";
         post.innerHTML = before + chuuHTML + after;
     }
 
