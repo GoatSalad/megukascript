@@ -61,7 +61,7 @@
             }
         }
         if (currentlyEnabledOptions.has("chuuOption")) {
-            var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\( (?:>>)??(\d*) ?\)/g);
+            var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\( ?(?:>>)?(\d*) ?\)/g);
             for (var j = chuu.length - 1; j >= 0; j--) {
                 parseChuu(post, chuu[j]);
             }
