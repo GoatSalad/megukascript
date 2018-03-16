@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.5.5
+// @version     2.5.6
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -367,6 +367,7 @@
             if (ownName.getElementsByTagName("I").length > 0) return;
 
             chuuHTML += " class=\"lewd_color\"";
+            chuuCount = localStorage.getItem("chuuCount", chuuCount);
             chuuCount++;
             localStorage.setItem("chuuCount", chuuCount);
             document.getElementById("chuu-counter").innerHTML = chuuCount;
