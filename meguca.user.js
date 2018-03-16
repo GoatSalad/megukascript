@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.5.4
+// @version     2.5.5
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -63,8 +63,7 @@
         if (currentlyEnabledOptions.has("chuuOption")) {
             var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\( ?(\d*) ?\)/g);
             for (var j = chuu.length - 1; j >= 0; j--) {
-                if (chuu.length - j >= 10) parseChuu(post, chuu[j], true);
-                else parseChuu(post, chuu[j], false);
+                parseChuu(post, chuu[j]);
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
@@ -349,7 +348,7 @@
         post.innerHTML = before + mathHTML + after;
     }
 
-    function parseChuu(post, chuu, isImpregnated) {
+    function parseChuu(post, chuu) {
         var postNum = chuu[1];
         var kissedPost = document.getElementById("p" + postNum);
 
@@ -372,8 +371,14 @@
             localStorage.setItem("chuuCount", chuuCount);
             document.getElementById("chuu-counter").innerHTML = chuuCount;
 
-            if (isImpregnated) alert("Congratulations on the pregnancy!");
-            else alert("chuu~");
+            var message = "chuu~";
+            if (chuuCount % 10 === 0) {
+                message += "\nCongratulations on your pregnancy!\nYou now have " +
+                           chuuCount / 10 +
+                           " children!";
+            }
+
+            alert(message);
         }
 
         chuuHTML += ">#chuu~(" + chuu[1] + ")</strong>";
@@ -820,6 +825,7 @@
 
     function setupImagePaste() {
         var tc = document.getElementById("thread-container");
+        if (!tc) return;
         tc.addEventListener('paste', function(e){
             var files = e.clipboardData.files;
             // check if a file was pasted
