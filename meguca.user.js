@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.5.3
+// @version     2.5.4
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -63,7 +63,8 @@
         if (currentlyEnabledOptions.has("chuuOption")) {
             var chuu = findMultipleShitFromAString(post.innerHTML, /#chuu\( ?(\d*) ?\)/g);
             for (var j = chuu.length - 1; j >= 0; j--) {
-                parseChuu(post, chuu[j]);
+                if (chuu.length - j >= 10) parseChuu(post, chuu[j], true);
+                else parseChuu(post, chuu[j], false);
             }
         }
         if (currentlyEnabledOptions.has("decideOption")) {
@@ -348,7 +349,7 @@
         post.innerHTML = before + mathHTML + after;
     }
 
-    function parseChuu(post, chuu) {
+    function parseChuu(post, chuu, isImpregnated) {
         var postNum = chuu[1];
         var kissedPost = document.getElementById("p" + postNum);
 
@@ -370,7 +371,9 @@
             chuuCount++;
             localStorage.setItem("chuuCount", chuuCount);
             document.getElementById("chuu-counter").innerHTML = chuuCount;
-            alert("chuu~");
+
+            if (isImpregnated) alert("Congratulations on the pregnancy!");
+            else alert("chuu~");
         }
 
         chuuHTML += ">#chuu~(" + chuu[1] + ")</strong>";
