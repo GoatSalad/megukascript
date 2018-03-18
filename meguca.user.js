@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.5.6
+// @version     2.5.7
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -42,6 +42,16 @@
     // For most new features, you'll want to put a call to your function in this function
     // This will be called multiple times per post, so handlers should be idempotent
     function handlePost(post) {
+        if (currentlyEnabledOptions.has("sekritPosting")) {
+            var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code><del>([^#<>\[\]]*)<\/del><code class=\"code-tag\"><\/code>/g);
+            for (var j = secret.length - 1; j >= 0; j--) {
+                parseSecretPost(post, secret[j]);
+            }
+            var secretQuote = findMultipleShitFromAString(post.innerHTML, /[ >]󠁂&gt;󠁂&gt;([\d]+)(?:[ <]+)/g);
+            for (var j = secretQuote.length - 1; j >= 0; j--) {
+                parseSecretQuote(post, secretQuote[j]);
+            }
+        }
         if (currentlyEnabledOptions.has("sharesOption")) {
             var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
             for (var j = shares.length - 1; j >= Math.max(0,shares.length-4); j--) {
@@ -76,16 +86,6 @@
         	decide = findMultipleShitFromAString(post.innerHTML, /(?:<blockquote>|<br>)([^><]*)(\s|<br>)<strong( class=\"\w+\")?>#d([0-9]+) \(([0-9]+)\)<\/strong>/g);
             for (var j = decide.length - 1; j >= 0; j--) {
                 parseDecide(post, decide[j], true);
-            }
-        }
-        if (currentlyEnabledOptions.has("sekritPosting")) {
-            var secret = findMultipleShitFromAString(post.innerHTML, /<code class=\"code-tag\"><\/code><del>([^#<>\[\]]*)<\/del><code class=\"code-tag\"><\/code>/g);
-            for (var j = secret.length - 1; j >= 0; j--) {
-                parseSecretPost(post, secret[j]);
-            }
-            var secretQuote = findMultipleShitFromAString(post.innerHTML, /[ >]󠁂&gt;󠁂&gt;([\d]+)(?:[ <]+)/g);
-            for (var j = secretQuote.length - 1; j >= 0; j--) {
-                parseSecretQuote(post, secretQuote[j]);
             }
         }
         if (currentlyEnabledOptions.has("dumbPosters")) {
