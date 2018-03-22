@@ -28,7 +28,8 @@
                           ["imagePaste", "Upload pasted images"],
                           ["annoyingFormatting", "Annoying formatting button"],
                           ["mathOption", "Enables math parsing"],
-                          ["chuuOption", "Enables receivement of chuu~s"]];
+                          ["chuuOption", "Enables receivement of chuu~s"],
+                          ["cancelposters", "Dumb cancelposters"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -529,6 +530,7 @@
         // configuration of the observers:
         var config = { attributes: true, childList: true, characterData: true };
         var config2 = { attributes: true };
+        var configCancelposter = { attributes: true, childList: true , subtree: true };
 
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
@@ -568,6 +570,49 @@
 
                 // pass in the target node, as well as the observer options
                 observer2.observe(postItself, config2);
+
+                if (currentlyEnabledOptions.has("cancelposters")) {
+                    // watch for deleted posts
+                    var observerCancelposter = new MutationObserver(function(mutations) {
+                        // stop observing once the post is not editing, or the post is hidden
+                        if (!postItself.classList.contains("editing") || postItself.classList.contains("hidden")) {
+                            observerCancelposter.disconnect();
+                        }
+
+                        // unhide removed posts, and restore their contents
+                        if (postItself.classList.contains("hidden")) {
+                            // look for events that removed nodes
+                            var cancelled = false;
+                            for (var j = 0; j < mutations.length; j++) {
+                                var removeEvt = mutations[j];
+                                if (removeEvt.type == "childList") {
+                                    for (var i = 0; i < removeEvt.removedNodes.length; i++) {
+                                        var node = removeEvt.removedNodes[i];
+                                        // don't re-add the 'Hide, Report' menu if it disappeared
+                                        if (!node.classList || !node.classList.contains("popup-menu")) {
+                                            removeEvt.target.appendChild(removeEvt.removedNodes[i]);
+                                            cancelled = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // restore the post if it was probably cancelled
+                            if (cancelled) {
+                                postItself.classList.remove("hidden");
+                                postItself.style.opacity = "0.5";
+                                // flag the post as cancelled so we add the correct 'dumb xposter' later
+                                postContent.cancelled = true;
+                                // somewhere along the way, the default image-hover listener breaks
+                                // so just prevent it from running to avoid console errors
+                                postItself.addEventListener("mousemove", function(e){e.stopPropagation();});
+                            }
+                        }
+                    });
+
+                    // pass in the target node, as well as the observer options
+                    observerCancelposter.observe(postItself, configCancelposter);
+                }
             });
         });
 
@@ -749,6 +794,11 @@
     }
 
     function checkForDumbPost(post) {
+        // cancelposters
+        if (post.cancelled) {
+            addToName(post, " (dumb cancelposter)");
+            return;
+        }
         var text = post.textContent;
         // ~posters
         if (text.match("~") != null) {
@@ -817,10 +867,12 @@
         var name = post.parentNode.getElementsByClassName("name spaced")[0];
         var newText = document.createTextNode(message);
         newText.id = "dumbposter";
-        if (name.nextSibling.id == "dumbposter") {
-            // already has a name, change it in case the content changed
-            name.parentNode.removeChild(name.nextSibling);
-        }
+        // remove existing names
+        name.parentNode.childNodes.forEach((node) => {
+            if (node.id == "dumbposter") {
+                name.parentNode.removeChild(node);
+            }
+        });
         name.parentNode.insertBefore(newText, name.nextSibling);
     }
 
