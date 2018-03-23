@@ -4,7 +4,7 @@
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
 // @connect     meguca.org
-// @version     2.5.7
+// @version     2.6.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -135,7 +135,7 @@
         new_sekrit_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
 
         // Another link to github
-        new_sekrit_cont += "<br><a href=\"https://github.com/GoatSalad/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
+        new_sekrit_cont += "<br><a href=\"https://github.com/dasdgdafg/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
         // Secret Encoding tab
         var new_sekrit_butt = "<a class=\"tab-link\" data-id=\"6\">Secret Encoding</a>";
