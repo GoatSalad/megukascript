@@ -30,7 +30,7 @@
                           ["mathOption", "Enables math parsing"],
                           ["chuuOption", "Enables receivement of chuu~s"],
                           ["cancelposters", "Dumb cancelposters"]];
-    const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
+    const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
     var currentlyEnabledOptions = new Set();
@@ -204,13 +204,14 @@
 
         document.getElementById("secretButton").onclick = function() {
             var fileInput = document.getElementById("secret_image");
+            var file = fileInput.files[0] || fileInput.javascriptIsFuckingDumb; // sometimes fileInput.files gets reset, so we keep a copy of the file in another property
             if (document.getElementById('text-input')!=null) {
-                if (fileInput.files.length == 0) {
+                if (!file) {
                     // text only
                     var text = btoa(unescape(encodeURIComponent(document.getElementById('hidetext').value)));
                     document.getElementById('hidetext').value='';
                     for (var j = 0; j < nipponeseIndex[0].length; j++) {
-                        if (text.indexOf(nipponeseIndex[0][j]) != -1) 
+                        if (text.indexOf(nipponeseIndex[0][j]) != -1)
                             text = nipponeseIndex[0][j] == "/" || nipponeseIndex[0][j] == "+" ? text.replace(new RegExp("\\" + nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]) : text.replace(new RegExp(nipponeseIndex[0][j], 'g'), nipponeseIndex[1][j]);
                     }
                     document.getElementById('text-input').value = document.getElementById('text-input').value.substring(0,document.getElementById('text-input').selectionStart) + '````**' + text + '**````\n' + document.getElementById('text-input').value.substring(document.getElementById('text-input').selectionEnd);
@@ -231,7 +232,6 @@
 
                     hiddenText += len;
                     hiddenText += "secret";
-                    var file = fileInput.files[0];
                     var fr = new FileReader();
                     fr.onload = function() {
                         var buffer = this.result;
@@ -262,6 +262,7 @@
 
                         // clean up
                         fileInput.value = "";
+                        fileInput.javascriptIsFuckingDumb = undefined;
                         document.getElementById('hidetext').value='';
                     };
                     fr.readAsArrayBuffer(file);
@@ -446,7 +447,7 @@
             secretQuote[0] = secretQuote[0].substring(0,secretQuote[0].length-1);
         }
         quote = "<a class=\"post-link\" data-id=\"" + quote + "\" href=\"#p" + quote + "\">&gt;&gt;" + quote + "</a><a class=\"hash-link\" href=\"#p" + quote + "\"> #</a>";
-        post.innerHTML = before2 + " </h>" + quote + after2; //"<h class=sekrit_text> " + 
+        post.innerHTML = before2 + " </h>" + quote + after2; //"<h class=sekrit_text> " +
     }
 
     function parseShares(post, shares) {
@@ -917,13 +918,30 @@
                 }
             }
         });
+
+        if (currentlyEnabledOptions.has("sekritPosting")) {
+            var hideBox = document.getElementById("hidetext");
+            if (!hideBox) return;
+            hideBox.addEventListener('paste', function(e){
+                var files = e.clipboardData.files;
+                // check if a file was pasted
+                if (files.length == 1) {
+                    var secretImage = document.getElementById("secret_image");
+
+                    if (secretImage != undefined) {
+                        secretImage.files = files;
+                        secretImage.javascriptIsFuckingDumb = files[0]; // secretImage.files seems to get cleared automatically
+                    }
+                }
+            });
+        }
     }
 
     function setup() {
         getCurrentOptions();
         insertCuteIntoCSS();
         readPostsForData();
-        if (document.getElementById("thread-container") != null) 
+        if (document.getElementById("thread-container") != null)
             setObservers();
         hackLatsOptions();
         if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
