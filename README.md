@@ -6,23 +6,9 @@ No buttcoin miners (yet!)
 ## Features
 <a href="https://comfy.moe/tawdnt.webm">A quick demonstration of various features</a>  <br />
 All of the features can be disabled invidually in the options panel. You need to refresh your browser to see the changes.
-### ~~Animated rolls~~
-~~Adds animation to max rolls and any repeating digits.~~ <br /> 
-~~Duration of flashing is configurable.~~<br>
-Now a feature of the meguca website itself.
-
-### Eden now playing banner
-Displays Eden Radio information in the now playing banner instead of the r/a/dio one. <br />
-Need to disable Now playing banner on the Fun tab to work properly.<br>
-Now a feature of the meguca website itself, though you can use it to quickly change between the two radios with some hacks (official functionality soon (maybe)).
 
 ### Pyu coloring
 Adds a little something every 1000 pyus.
-
-### ~~Roulette~~
-~~Adds russian roulette function. Roll a (1) to die.~~<br />
-~~Call the function with #roulette #d[1-6]~~
-Now a feature of the meguca website itself. Just type #roulette to try killing yourself.
 
 ### Decision coloring
 Adds simple decision making with dice. <br />
