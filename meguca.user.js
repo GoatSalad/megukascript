@@ -3,8 +3,10 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @include     https://meguca.org/*
+// @include     https://chiru.no/*
 // @connect     meguca.org
-// @version     2.6.0
+// @connect     chiru.no
+// @version     2.6.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -726,7 +728,8 @@
 
     function addMessageToPost(img, message) {
         // find the post(s) that had this image
-        var url = new URL(img.src, "https://meguca.org");
+        var baseURL = new URL(window.location).origin;
+        var url = new URL(img.src, baseURL);
         var thumbs = document.querySelectorAll("figure > a[href$='"+url.pathname+"']");
         for (var i = 0; i < thumbs.length; i++) {
             var thumb = thumbs[i];
