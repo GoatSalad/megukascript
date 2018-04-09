@@ -361,7 +361,7 @@
 
         if (kissedPost === null || kissedPost === undefined) return;
 
-        var nametag = kissedPost.children[1].getElementsByTagName("B")[0];
+        var nametag = kissedPost.querySelector("header").getElementsByTagName("B")[0];
 
         var before = post.innerHTML.substring(0, chuu.index);
         var after = post.innerHTML.substring(chuu.index + chuu[0].length);
@@ -369,7 +369,7 @@
 
         // Has an (You) => You've been kissed!
         if (nametag.getElementsByTagName("I").length > 0) {
-            var ownName = post.parentNode.children[1].getElementsByTagName("B")[0];
+            var ownName = post.parentNode.querySelector("header").getElementsByTagName("B")[0];
             // Don't chuu yourself
             if (ownName.getElementsByTagName("I").length > 0) return;
 
@@ -399,7 +399,8 @@
     var postsToCheckAgain = [];
 
     function checkForDeletedPost(post) {
-        if (post.parentNode.classList.contains("deleted")) {
+        if (post.parentNode.classList.contains("deleted") &&
+            post.parentNode.querySelector('text[style="color: red;"]') == null) {
             if (modlog == undefined && !fetchingModlog) {
                 //get it now
                 fetchModlog();
@@ -433,7 +434,6 @@
     }
 
     function updateDeletedPosts() {
-        console.log("checking posts1");
         // more posts may have been deleted while we were fetching the mod log
         // so if we don't find a post, check it again after re-fetching the mod log
         checkForPostInModlog(postsToCheckAgain);
@@ -631,7 +631,6 @@
                 if (postContent == undefined) {
                     return;
                 }
-                console.log(postContent);
 
                 var observer2 = new MutationObserver(function(mutations2) {
                     mutations2.forEach(function(mutation2) {
@@ -1220,8 +1219,8 @@
         var filetypes = document.getElementById("steal_filetypes").value.split(" ");
         for (var i = 0; i < posts.length; i++) {
             if (posts[i].tagName.toLowerCase() === "article" &&
-                posts[i].children[2].tagName.toLowerCase() === "figcaption") {
-                var anchor = posts[i].children[2].children[3];
+                posts[i].querySelector("figcaption") != null) {
+                var anchor = posts[i].querySelector("figcaption").children[3];
                 for (var j = 0; j < filetypes.length; j++)
                     if (anchor.href.endsWith(filetypes[j]))
                         anchor.click();
