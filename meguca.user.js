@@ -32,7 +32,8 @@
                           ["mathOption", "Enables math parsing"],
                           ["chuuOption", "Enables receivement of chuu~s"],
                           ["cancelposters", "Dumb cancelposters"],
-                          ["showDeletedPosts", "Show deleted posts"]];
+                          ["showDeletedPosts", "Show deleted posts"],
+                          ["showWhoDeletedPosts", "Show who deleted posts"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -98,7 +99,9 @@
         if (currentlyEnabledOptions.has("screamingPosters")) {
             checkForScreamingPost(post);
         }
-        checkForDeletedPost(post);
+        if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
+            checkForDeletedPost(post);
+        }
     }
 
     function hackLatsOptions() {
@@ -614,7 +617,8 @@
             mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length == 0) {
                     // check for deleted posts
-                    if (mutation.type == "attributes" && mutation.attributeName == "class") {
+                    if (mutation.type == "attributes" && mutation.attributeName == "class" &&
+                       currentlyEnabledOptions.has("showWhoDeletedPosts")) {
                         var post = mutation.target;
                         var postContent = post.getElementsByClassName("post-container")[0];
                         if (postContent != undefined) {
