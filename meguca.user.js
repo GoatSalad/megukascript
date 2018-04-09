@@ -6,7 +6,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     2.6.1
+// @version     2.7.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -31,7 +31,9 @@
                           ["annoyingFormatting", "Annoying formatting button"],
                           ["mathOption", "Enables math parsing"],
                           ["chuuOption", "Enables receivement of chuu~s"],
-                          ["cancelposters", "Dumb cancelposters"]];
+                          ["cancelposters", "Dumb cancelposters"],
+                          ["showDeletedPosts", "Show deleted posts"],
+                          ["showWhoDeletedPosts", "Show who deleted posts"]];
     const nipponeseIndex = ["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
                             "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんゃゅょ心無日口二手山木糸羽雨辵水金色何"];
     // The current settings (will be loaded before other methods are called)
@@ -56,7 +58,7 @@
             }
         }
         if (currentlyEnabledOptions.has("sharesOption")) {
-            var shares = findMultipleShitFromAString(post.innerHTML, /\[([^#\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
+            var shares = findMultipleShitFromAString(post.innerHTML, /\[([^\]\[]*)\] <strong( class=\"\w+\")?>#(\d+)d(\d+) \(([\d +]* )*= (?:\d+)\)<\/strong>/g);
             for (var j = shares.length - 1; j >= Math.max(0,shares.length-4); j--) {
                 parseShares(post, shares[j]);
             }
@@ -96,6 +98,9 @@
         }
         if (currentlyEnabledOptions.has("screamingPosters")) {
             checkForScreamingPost(post);
+        }
+        if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
+            checkForDeletedPost(post);
         }
     }
 
@@ -285,7 +290,8 @@
             ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
             ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
             ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }"+
-            ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }";
+            ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }"+
+            (currentlyEnabledOptions.has("showDeletedPosts") ? ".deleted.glass > :not(.antispam-captcha) { display: unset !important}" : "");
         document.head.appendChild(css);
     }
 
@@ -358,7 +364,7 @@
 
         if (kissedPost === null || kissedPost === undefined) return;
 
-        var nametag = kissedPost.children[1].getElementsByTagName("B")[0];
+        var nametag = kissedPost.querySelector("header").getElementsByTagName("B")[0];
 
         var before = post.innerHTML.substring(0, chuu.index);
         var after = post.innerHTML.substring(chuu.index + chuu[0].length);
@@ -366,7 +372,7 @@
 
         // Has an (You) => You've been kissed!
         if (nametag.getElementsByTagName("I").length > 0) {
-            var ownName = post.parentNode.children[1].getElementsByTagName("B")[0];
+            var ownName = post.parentNode.querySelector("header").getElementsByTagName("B")[0];
             // Don't chuu yourself
             if (ownName.getElementsByTagName("I").length > 0) return;
 
@@ -388,6 +394,78 @@
 
         chuuHTML += ">#chuu~(" + chuu[1] + ")</strong>";
         post.innerHTML = before + chuuHTML + after;
+    }
+
+    var modlog;
+    var fetchingModlog = false;
+    var postsToCheck = [];
+    var postsToCheckAgain = [];
+
+    function checkForDeletedPost(post) {
+        if (post.parentNode.classList.contains("deleted") &&
+            post.parentNode.querySelector('text[style="color: red;"]') == null) {
+            if (modlog == undefined && !fetchingModlog) {
+                //get it now
+                fetchModlog();
+                postsToCheck.push(post);
+            } else if (modlog != undefined && !fetchingModlog) {
+                // use existing data
+                postsToCheck.push(post);
+                updateDeletedPosts();
+            } else {
+                // just queue up checking
+                postsToCheck.push(post);
+            }
+        }
+    }
+
+    function fetchModlog() {
+        fetchingModlog = true;
+        var baseURL = new URL(window.location).origin;
+        var board = window.location.pathname.split("/")[1];
+        var url = new URL("/html/mod-log/" + board, baseURL);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: url,
+            responseType: 'text',
+            onload: function(response) {
+                modlog = response.responseText;
+                fetchingModlog = false;
+                updateDeletedPosts();
+            }
+        });
+    }
+
+    function updateDeletedPosts() {
+        // more posts may have been deleted while we were fetching the mod log
+        // so if we don't find a post, check it again after re-fetching the mod log
+        checkForPostInModlog(postsToCheckAgain);
+        postsToCheckAgain = checkForPostInModlog(postsToCheck);
+        postsToCheck = [];
+        if (!fetchingModlog && postsToCheckAgain.length > 0) {
+            fetchModlog();
+        }
+    }
+
+    function checkForPostInModlog(posts) {
+        var result = [];
+        for (var i = 0; i < posts.length; i++) {
+            var post = posts[i];
+            var id = post.parentNode.id.substring(1);
+            var delNode = post.parentNode.getElementsByClassName("deleted-toggle")[0];
+            var matches = modlog.match(new RegExp("<td>Delete post<\/td><td>([^<]*)<\/td><td><a class=\"post-link\" data-id=\"" + id + "\""));
+            // posts deleted a long time ago may no longer have entries in the mod-log
+            if (matches != null && matches[1] != undefined && delNode != undefined) {
+                // add the text below the deleted icon
+                var txt = document.createElement("text");
+                txt.textContent = "Deleted by " + matches[1];
+                txt.style.color = "red";
+                delNode.parentNode.insertBefore(txt, delNode.nextSibling);
+            } else {
+                result.push(post);
+            }
+        }
+        return result;
     }
 
     function parseDecide(post, decide, isSmart) {
@@ -531,15 +609,32 @@
         var thread = document.getElementById("thread-container");
 
         // configuration of the observers:
-        var config = { attributes: true, childList: true, characterData: true };
+        var config = { attributes: true, childList: true, subtree: true };
         var config2 = { attributes: true };
         var configCancelposter = { attributes: true, childList: true , subtree: true };
 
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                if (mutation.addedNodes.length == 0) return;
+                if (mutation.addedNodes.length == 0) {
+                    // check for deleted posts
+                    if (mutation.type == "attributes" && mutation.attributeName == "class" &&
+                       currentlyEnabledOptions.has("showWhoDeletedPosts")) {
+                        var post = mutation.target;
+                        var postContent = post.getElementsByClassName("post-container")[0];
+                        if (postContent != undefined) {
+                            checkForDeletedPost(postContent);
+                        }
+                    }
+                    return;
+                }
                 var postItself = mutation.addedNodes[0];
+                if (postItself.nodeName != "ARTICLE") {
+                    return;
+                }
                 var postContent = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
+                if (postContent == undefined) {
+                    return;
+                }
 
                 var observer2 = new MutationObserver(function(mutations2) {
                     mutations2.forEach(function(mutation2) {
@@ -1128,8 +1223,8 @@
         var filetypes = document.getElementById("steal_filetypes").value.split(" ");
         for (var i = 0; i < posts.length; i++) {
             if (posts[i].tagName.toLowerCase() === "article" &&
-                posts[i].children[2].tagName.toLowerCase() === "figcaption") {
-                var anchor = posts[i].children[2].children[3];
+                posts[i].querySelector("figcaption") != null) {
+                var anchor = posts[i].querySelector("figcaption").children[3];
                 for (var j = 0; j < filetypes.length; j++)
                     if (anchor.href.endsWith(filetypes[j]))
                         anchor.click();
