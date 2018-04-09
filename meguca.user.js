@@ -6,7 +6,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     2.7.0
+// @version     2.7.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -98,6 +98,9 @@
         }
         if (currentlyEnabledOptions.has("screamingPosters")) {
             checkForScreamingPost(post);
+        }
+        if (currentlyEnabledOptions.has("showDeletedPosts")) {
+            showDeletedPost(post);
         }
         if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
             checkForDeletedPost(post);
@@ -290,8 +293,7 @@
             ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
             ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
             ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }"+
-            ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }"+
-            (currentlyEnabledOptions.has("showDeletedPosts") ? ".deleted.glass > :not(.antispam-captcha) { display: unset !important}" : "");
+            ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }";
         document.head.appendChild(css);
     }
 
@@ -468,6 +470,13 @@
         return result;
     }
 
+    function showDeletedPost(post) {
+        var parent = post.parentNode;
+        if (parent.classList.contains("deleted")) {
+            parent.getElementsByClassName("deleted-toggle")[0].checked = true;
+        }
+    }
+
     function parseDecide(post, decide, isSmart) {
         var offset = (isSmart) ? 1 : 0;
 
@@ -617,12 +626,16 @@
             mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length == 0) {
                     // check for deleted posts
-                    if (mutation.type == "attributes" && mutation.attributeName == "class" &&
-                       currentlyEnabledOptions.has("showWhoDeletedPosts")) {
+                    if (mutation.type == "attributes" && mutation.attributeName == "class") {
                         var post = mutation.target;
                         var postContent = post.getElementsByClassName("post-container")[0];
                         if (postContent != undefined) {
-                            checkForDeletedPost(postContent);
+                            if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
+                                checkForDeletedPost(postContent);
+                            }
+                            if (currentlyEnabledOptions.has("showDeletedPosts")) {
+                                showDeletedPost(postContent);
+                            }
                         }
                     }
                     return;
@@ -1230,7 +1243,6 @@
                         anchor.click();
             }
         }
-
     }
 
     setup();
