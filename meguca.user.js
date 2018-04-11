@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.0.0
+// @version     3.1.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -423,7 +423,6 @@ function setObservers() {
     // configuration of the observers:
     var config = { attributes: true, childList: true, subtree: true };
     var config2 = { attributes: true };
-    var configCancelposter = { attributes: true, childList: true , subtree: true };
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -438,6 +437,40 @@ function setObservers() {
                         }
                         if (currentlyEnabledOptions.has("showDeletedPosts")) {
                             showDeletedPost(postContent);
+                        }
+                        if (currentlyEnabledOptions.has("cancelposters")) {
+                            // unhide removed posts, and restore their contents
+                            if (post.classList.contains("hidden")) {
+                                // look for events that removed nodes
+                                var cancelled = false;
+                                for (var j = 0; j < mutations.length; j++) {
+                                    var removeEvt = mutations[j];
+                                    if (removeEvt.type == "childList") {
+                                        for (var i = 0; i < removeEvt.removedNodes.length; i++) {
+                                            var node = removeEvt.removedNodes[i];
+                                            // don't re-add the 'Hide, Report' menu if it disappeared
+                                            // or the post controls or editable textarea
+                                            if (!((node.classList && node.classList.contains("popup-menu")) ||
+                                                 node.id == "post-controls" ||
+                                                 node.id == "text-input")) {
+                                                removeEvt.target.appendChild(removeEvt.removedNodes[i]);
+                                                cancelled = true;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // restore the post if it was probably cancelled
+                                if (cancelled) {
+                                    post.classList.remove("hidden");
+                                    post.style.opacity = "0.5";
+                                    // flag the post as cancelled so we add the correct 'dumb xposter' later
+                                    postContent.cancelled = true;
+                                    // somewhere along the way, the default image-hover listener breaks
+                                    // so just prevent it from running to avoid console errors
+                                    post.addEventListener("mousemove", function(e){e.stopPropagation();});
+                                }
+                            }
                         }
                     }
                 }
@@ -484,49 +517,6 @@ function setObservers() {
 
             // pass in the target node, as well as the observer options
             observer2.observe(postItself, config2);
-
-            if (currentlyEnabledOptions.has("cancelposters")) {
-                // watch for deleted posts
-                var observerCancelposter = new MutationObserver(function(mutations) {
-                    // stop observing once the post is not editing, or the post is hidden
-                    if (!postItself.classList.contains("editing") || postItself.classList.contains("hidden")) {
-                        observerCancelposter.disconnect();
-                    }
-
-                    // unhide removed posts, and restore their contents
-                    if (postItself.classList.contains("hidden")) {
-                        // look for events that removed nodes
-                        var cancelled = false;
-                        for (var j = 0; j < mutations.length; j++) {
-                            var removeEvt = mutations[j];
-                            if (removeEvt.type == "childList") {
-                                for (var i = 0; i < removeEvt.removedNodes.length; i++) {
-                                    var node = removeEvt.removedNodes[i];
-                                    // don't re-add the 'Hide, Report' menu if it disappeared
-                                    if (!node.classList || !node.classList.contains("popup-menu")) {
-                                        removeEvt.target.appendChild(removeEvt.removedNodes[i]);
-                                        cancelled = true;
-                                    }
-                                }
-                            }
-                        }
-
-                        // restore the post if it was probably cancelled
-                        if (cancelled) {
-                            postItself.classList.remove("hidden");
-                            postItself.style.opacity = "0.5";
-                            // flag the post as cancelled so we add the correct 'dumb xposter' later
-                            postContent.cancelled = true;
-                            // somewhere along the way, the default image-hover listener breaks
-                            // so just prevent it from running to avoid console errors
-                            postItself.addEventListener("mousemove", function(e){e.stopPropagation();});
-                        }
-                    }
-                });
-
-                // pass in the target node, as well as the observer options
-                observerCancelposter.observe(postItself, configCancelposter);
-            }
         });
     });
 
