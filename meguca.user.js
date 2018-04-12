@@ -8,7 +8,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.1.1
+// @version     3.2.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -189,7 +189,7 @@ function handlePost(post) {
         }
     }
     if (currentlyEnabledOptions.has("mathOption")) {
-        var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*%()., ]*(?:pow)*(?:log)*)*)\)/g);
+        var math = findMultipleShitFromAString(post.innerHTML, /#math\(((?:[\d-+/*%().^ ]*(?:log)*)*)\)/g);
         for (var j = math.length - 1; j >= 0; j--) {
             parseMath(post, math[j]);
         }
@@ -246,7 +246,8 @@ function parsePyu(post, pyu) {
 }
 
 function parseMath(post, math) {
-    var expr = math[1].replace(/pow/g, 'Math.pow').replace(/log/g, 'Math.log');
+    var expr = math[1];
+    expr = parseMath_addPow(expr).replace(/log/g, 'Math.log');
     var result;
     try {
         result = eval(expr);
@@ -259,6 +260,40 @@ function parseMath(post, math) {
     var after = post.innerHTML.substring(math.index + math[0].length);
     var mathHTML = "<strong>" + math[0].substring(0, 5) + " " + math[0].substring(5, math[0].length - 1) + " = " + result + ")</strong>";
     post.innerHTML = before + mathHTML + after;
+}
+
+function parseMath_addPow(str) {
+    for (let i = str.length-1; i >= 0; i--) {
+        if (str[i] !== "^") continue;
+        let parentheses = 0;
+        const operators = /[-+*/%^]/;
+        
+        // looking ahead
+        let j;
+        for (j = i+1; j < str.length; j++) {
+            if (str[j] === "(") parentheses++;
+            else if (str[j] === ")" && parentheses > 0) parentheses--;
+            else if (operators.test(str[j]) && parentheses === 0) break;
+        }
+        // j is just after the term
+        
+        // looking back
+        let k;
+        parentheses = 0; // so it doesn't break even more stuff;
+        for (k = i-1; k >= 0; k--) {
+            if (str[k] === ")") parentheses++;
+            else if (str[k] === "(" && parentheses > 0) parentheses--;
+            else if (operators.test(str[k]) && parentheses === 0) break;
+        }
+        // k is just before the term
+        k++; // k is on the beginning of the term
+        
+        str = str.substring(0, k) + "Math.pow(" + str.substring(k,i) + "," +
+              str.substring(i+1, j) + ")" + str.substring(j);
+        i += 9; // Due to the addition of "pow(" before i
+    }
+
+    return str;
 }
 
 function parseChuu(post, chuu) {
