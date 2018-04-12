@@ -3,7 +3,6 @@
 // @namespace   megucasoft
 // @description Does a lot of stuff
 // @require     player.js
-// @require     secret.js
 // @require     deleted.js
 // @include     https://meguca.org/*
 // @include     https://chiru.no/*
@@ -25,9 +24,7 @@ const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                       ["dumbPosters", "Dumb xposters"],
                       ["dumbblanc", "dumb blancposters, not cute"],
                       ["sharesOption", "Shares Formatting"],
-                      ["screamingPosters", "Vibrate screaming posts"],
-                      ["sekritPosting", "Secret Posting"],
-                      ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
+                      ["screamingPosters", "Vibrate screaming posts<br><br>(Check off the following option if you have drag and drop problems)"],
                       ["enablemegucaplayer","Enable music player"],
                       ["megucaplayerOption", "Show music player<br>"],
                       ["imagePaste", "Upload pasted images"],
@@ -73,24 +70,9 @@ function hackLatsOptions() {
     // Linking to github
     new_cont += "<br><a href=\"https://github.com/dasdgdafg/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
 
-    var new_sekrit_cont = "<div data-id=\"6\">";
-
-    // hidetext encode
-    new_sekrit_cont += "<input type=\"textbox\" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type=\"button\" id=\"secretButton\">Convert & input</button><br>";
-
-    // image for secret message
-    new_sekrit_cont += "<input name=\"secret_image\" id=\"secret_image\" type=\"file\">";
-
-    // Another link to github
-    new_sekrit_cont += "<br><a href=\"https://github.com/dasdgdafg/megukascript/blob/master/README.md\" target=\"_blank\">How do I use this?</a>";
-
-    // Secret Encoding tab
-    var new_sekrit_butt = "<a class=\"tab-link\" data-id=\"6\">Secret Encoding</a>";
-
     new_cont += "</div>";
-    new_sekrit_cont += "</div>";
-    tab_butts.innerHTML += new_butt + new_sekrit_butt;
-    tab_cont.innerHTML += new_cont + new_sekrit_cont;
+    tab_butts.innerHTML += new_butt;
+    tab_cont.innerHTML += new_cont;
 
     for (var i = 0; i < onOffOptions.length; i++) {
         var id = onOffOptions[i][0];
@@ -121,18 +103,10 @@ function hackLatsOptions() {
         localStorage.setItem(this.id, (this.value > 60) ? 60 : this.value);
     };
 
-    document.querySelector("#hidetext").addEventListener("keyup", function(event) {
-        if(event.key !== "Enter") return; // Use `.key` instead.
-        document.querySelector("#secretButton").click(); // Things you want to do.
-        event.preventDefault(); // No need to `return false;`.
-    });
-
     document.getElementById("steal_filetypes").value = defaultFiletypes;
     document.getElementById("stealButton").onclick = function() {
         downloadAll();
     };
-
-    document.getElementById("secretButton").onclick = secretButtonPressed;
 }
 
 function insertCuteIntoCSS() {
