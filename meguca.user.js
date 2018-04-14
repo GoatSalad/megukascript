@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.2.0
+// @version     3.2.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -293,7 +293,7 @@ function parseMath_addPow(str) {
         if (str[i] !== "^") continue;
         let parentheses = 0;
         const operators = /[-+*/%^]/;
-        
+
         // looking ahead
         let j;
         for (j = i+1; j < str.length; j++) {
@@ -302,7 +302,7 @@ function parseMath_addPow(str) {
             else if (operators.test(str[j]) && parentheses === 0) break;
         }
         // j is just after the term
-        
+
         // looking back
         let k;
         parentheses = 0; // so it doesn't break even more stuff;
@@ -313,7 +313,7 @@ function parseMath_addPow(str) {
         }
         // k is just before the term
         k++; // k is on the beginning of the term
-        
+
         str = str.substring(0, k) + "Math.pow(" + str.substring(k,i) + "," +
               str.substring(i+1, j) + ")" + str.substring(j);
         i += 9; // Due to the addition of "pow(" before i
@@ -475,7 +475,7 @@ function setObservers() {
                         }
                         if (currentlyEnabledOptions.has("cancelposters")) {
                             // unhide removed posts, and restore their contents
-                            if (post.classList.contains("hidden")) {
+                            if (post.classList.contains("hidden") && postContent.innerText == "") {
                                 // look for events that removed nodes
                                 var cancelled = false;
                                 for (var j = 0; j < mutations.length; j++) {
