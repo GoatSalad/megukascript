@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.2.2
+// @version     3.3.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -36,13 +36,27 @@ const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                       ["chuuOption", "Enables receivement of chuu~s"],
                       ["cancelposters", "Dumb cancelposters"],
                       ["showDeletedPosts", "Show deleted posts"],
-                      ["showWhoDeletedPosts", "Show who deleted posts"]];
+                      ["showWhoDeletedPosts", "Show who deleted posts"],
+                      ["filterPosts", "Filter posts"]];
 
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
 // Add custom options here if needed
 var flashingDuration = 60;
 var vibrationDuration = 20;
+var customFilterText = "#Custom filters (lines starting with # are ignored)\n\
+#text: is assumed by default if you don't specify otherwise\n\
+#text:^[Aa]+$\n\
+#name:[^(^Anonymous$)]\n\
+#id:Fautatkal\n\
+#flag:Sweden\n\
+#filename:image\\.png\n";
+var customFilters = [];
+const filterTypes = new Map([["text", ".post-container"],
+                             ["name", ".name.spaced > span:nth-child(1)"],
+                             ["id", ".name.spaced > span:nth-child(2)"],
+                             ["flag", ".flag"],
+                             ["filename", "figcaption > a:not(.image-toggle)"]]);
 
 function hackLatsOptions() {
     var options = document.getElementById("options");
@@ -66,6 +80,10 @@ function hackLatsOptions() {
 
     // image stealing
     new_cont += "<span>Steal all files ending with </span><input type=\"textbox\" name=steal_filetypes id=steal_filetypes><button type=\"button\" id=\"stealButton\">Steal files</button><br>";
+
+    // custom filters
+    new_cont += "<textarea rows=4 cols=60 id=customFilters style='font-size: 10pt;'></textarea><br>";
+    new_cont += "<button type=\"button\" id=\"saveFilters\">Save filter changes</button><br>";
 
     // Chuu counter
     new_cont += "<br>You have received <span id=\"chuu-counter\">" + chuuCount + "</span> chuu~'s";
@@ -133,6 +151,12 @@ function hackLatsOptions() {
     };
 
     document.getElementById("secretButton").onclick = secretButtonPressed;
+
+    document.getElementById("customFilters").value = customFilterText;
+    document.getElementById("saveFilters").onclick = function() {
+        customFilterText = document.getElementById("customFilters").value;
+        localStorage.setItem("customFilterText", document.getElementById("customFilters").value);
+    };
 }
 
 function insertCuteIntoCSS() {
@@ -147,6 +171,7 @@ function insertCuteIntoCSS() {
         ".lowee_wins { animation: lowee_blinker 0.6s linear " + getIterations(0.6) + "; color: #e6e6ff; } @keyframes lowee_blinker { 50% { color: #c59681 }}"+
         ".leanbox_wins { animation: leanbox_blinker 0.6s linear " + getIterations(0.6) + "; color: #4dff4d; } @keyframes leanbox_blinker { 50% { color: #fff} }"+
         ".thousand_pyu { animation: pyu_blinker 0.4s linear " + getIterations(0.4) + "; color: aqua; } @keyframes pyu_blinker { 50% { color: white } }"+
+        ".filtered :not(.filter-stub) { display: none }" +
         ".shaking_post { animation: screaming 0.5s linear 0s " + getVibrationIterations() + "; } @keyframes screaming { 0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); } 20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); } 30% { -webkit-transform: translate(0px, 2px) rotate(0deg); } 40% { -webkit-transform: translate(1px, -1px) rotate(1deg); } 50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); } 60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); } 70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); } 80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); } 90% { -webkit-transform: translate(2px, 2px) rotate(0deg); } 100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); } }";
     document.head.appendChild(css);
 }
@@ -187,6 +212,45 @@ function getCurrentOptions() {
 
     chuuCount = parseInt(localStorage.getItem("chuuCount"));
     if (isNaN(chuuCount)) chuuCount = 0;
+
+    var filters = localStorage.getItem("customFilterText");
+    if (filters != undefined) {
+        customFilterText = filters;
+        setupFilters();
+    }
+}
+
+function setupFilters() {
+    var filters = customFilterText.split("\n");
+    for (var i = 0; i < filters.length; i++) {
+        var filter = filters[i];
+        if (filter.startsWith("#")) {
+            // ignore comments
+            continue;
+        }
+        if (filter == "") {
+            // ignore empty lines
+            continue;
+        }
+        // check what kind of filter this is, default to checking post text
+        var type = "text";
+        for (var potentialType of filterTypes.keys()) {
+            if (filter.startsWith(potentialType + ":")) {
+                type = potentialType;
+                filter = filter.substring(potentialType.length + 1);
+                break;
+            }
+        }
+        var reg;
+        try {
+            reg = new RegExp(filter)
+        } catch(e) {
+            // anon is a baka
+            console.log(e);
+            continue;
+        }
+        customFilters.push([type, reg])
+    }
 }
 
 // For most new features, you'll want to put a call to your function in this function
@@ -249,6 +313,9 @@ function handlePost(post) {
     }
     if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
         checkForDeletedPost(post);
+    }
+    if (currentlyEnabledOptions.has("filterPosts")) {
+        filterPost(post);
     }
 }
 
@@ -448,9 +515,7 @@ function findMultipleShitFromAString(s, re) {
     return result;
 }
 
-// First layer of observers watches the thread
-// Second layers watches for when the post finishes
-// Third layer for when the server updates the post
+// Observer watches the thread
 
 function setObservers() {
     var thread = document.getElementById("thread-container");
@@ -590,7 +655,7 @@ function setUpEdenBanner() {
 }
 
 function getInfoFromEden() {
-    xhttp = new XMLHttpRequest();
+    var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             updateEdenBanner(JSON.parse(this.responseText));
@@ -691,6 +756,51 @@ function addToName(post, message) {
         }
     });
     name.parentNode.insertBefore(newText, name.nextSibling);
+}
+
+function filterPost(postContent) {
+    var post = postContent.parentNode;
+    if (post.classList.contains("filtered") ||
+        post.classList.contains("filtered-shown")) {
+        return;
+    }
+    for (var i = 0; i < customFilters.length; i++) {
+        var filter = customFilters[i];
+        var type = filter[0];
+        var reg = filter[1];
+        var textToMatch;
+        var selector = filterTypes.get(type);
+        var elt = post.querySelector(selector);
+        if (elt != null) {
+            // flags don't have text, so use the title instead
+            if (type == "flag") {
+                textToMatch = elt.title;
+            } else {
+                textToMatch = elt.innerText;
+            }
+        }
+        if (textToMatch != undefined && textToMatch.match(reg)) {
+            post.classList.add("filtered");
+            var stub = document.createElement("div");
+            stub.classList.add("filter-stub");
+            var name = filter[1].toString();
+            name = name.substring(1, name.length - 1); // strip the /s
+            stub.innerText = "Post filtered (" + filter[0] + ":" + name + ")";
+            stub.onclick = showFilteredPost;
+            post.appendChild(stub);
+        }
+    }
+}
+
+function showFilteredPost() {
+    var post = this.parentNode;
+    if (post.classList.contains("filtered")) {
+        post.classList.remove("filtered");
+        post.classList.add("filtered-shown");
+    } else {
+        post.classList.remove("filtered-shown");
+        post.classList.add("filtered");
+    }
 }
 
 function setupImagePaste() {
