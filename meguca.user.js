@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.2.1
+// @version     3.2.2
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -456,14 +456,13 @@ function setObservers() {
     var thread = document.getElementById("thread-container");
 
     // configuration of the observers:
-    var config = { attributes: true, childList: true, subtree: true };
-    var config2 = { attributes: true };
+    var config = { attributes: true, childList: true, subtree: true, attributeOldValue: true };
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.addedNodes.length == 0) {
-                // check for deleted posts
                 if (mutation.type == "attributes" && mutation.attributeName == "class") {
+                    // check for existing posts that have changed, ie deleted/canceled/finished
                     var post = mutation.target;
                     var postContent = post.getElementsByClassName("post-container")[0];
                     if (postContent != undefined) {
@@ -507,51 +506,41 @@ function setObservers() {
                                 }
                             }
                         }
+                        // check for posts finishing
+                        // (the current user deadposting will have been 'reply-form' but not 'editing')
+                        if ((mutation.oldValue.split(" ").includes("editing") ||
+                             mutation.oldValue.split(" ").includes("reply-form")) &&
+                             !post.classList.contains("editing") &&
+                             !post.classList.contains("reply-form")) {
+                            handlePost(postContent);
+                            mgcPl_addNewSong(post.getElementsByTagName("figcaption")[0]);
+                        }
                     }
                 }
-                return;
-            }
-            var postItself = mutation.addedNodes[0];
-            if (postItself.nodeName != "ARTICLE") {
-                return;
-            }
-            var postContent = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
-            if (postContent == undefined) {
-                return;
-            }
+            } else {
+                // check what was added
+                var postItself = mutation.addedNodes[0];
+                if (postItself.nodeName != "ARTICLE") {
+                    return;
+                }
+                var postContent = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
+                if (postContent == undefined) {
+                    return;
+                }
 
-            var observer2 = new MutationObserver(function(mutations2) {
-                mutations2.forEach(function(mutation2) {
-                    // Don't continue while still editing
-                    if (postItself.getAttribute("class").includes("editing")) {
-                        // add Format button to posts the user is making
-                        if (currentlyEnabledOptions.has("annoyingFormatting") && postItself.getAttribute("class").includes("reply-form")) {
-                            addFormatButton(postItself);
-                        }
-                        return;
+                // still editing
+                if (postItself.getAttribute("class").includes("editing") || postItself.getAttribute("class").includes("reply-form")) {
+                    // add Format button to posts the user is making
+                    if (currentlyEnabledOptions.has("annoyingFormatting") && postItself.getAttribute("class").includes("reply-form")) {
+                        addFormatButton(postItself);
                     }
-                    // handlesPost (works for others posters)
-                    handlePost(postContent);
-                    mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
-
-                    // launch observer3 (only works for own posts)
-                    var observer3 = new MutationObserver(function(mutations3) {
-                        mutations3.forEach(function(mutation3) {
-                            handlePost(postContent);
-                            mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
-                        });
-                    });
-
-                    observer3.observe(postContent.children[0], config);
-
-                    // kill both after 5 secs
-                    setTimeout(function() { observer3.disconnect(); observer2.disconnect(); }, 5000);
-
-                });
-            });
-
-            // pass in the target node, as well as the observer options
-            observer2.observe(postItself, config2);
+                    // but don't do anything else to editing posts
+                    return;
+                }
+                // handlesPost (works for others' deadposts)
+                handlePost(postContent);
+                mgcPl_addNewSong(postItself.getElementsByTagName("figcaption")[0]);
+            }
         });
     });
 
