@@ -42,6 +42,9 @@ The player will automatically list all available music and play them on order, l
 It will still work if there are spaces inside the brackets like in "#chuu( 1231233 )" but not if it includes the ">>".<br>
 Check how many chuu~'s you have received on the settings tab.
 
+### Filtering
+Filter posts that match regex.  Prefix your filter with "text:", "name:", "id:", "flag:", or "filename:" to have the regex apply to that part of the post.  See the commented out sample filters for examples.
+
 ## Installation
 <ul>
  <li>Install Tampermonkey for <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?  hl=en">Chrome</a>/<a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/">Firefox</a></li>
