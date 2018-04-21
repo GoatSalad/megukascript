@@ -37,7 +37,8 @@ const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                       ["cancelposters", "Dumb cancelposters"],
                       ["showDeletedPosts", "Show deleted posts"],
                       ["showWhoDeletedPosts", "Show who deleted posts"],
-                      ["filterPosts", "Filter posts"]];
+                      ["filterPosts", "Filter posts"],
+                      ["preSubmitOption", "Enables pre-submit post processing (necessary for some functions)"]];
 
 // The current settings (will be loaded before other methods are called)
 var currentlyEnabledOptions = new Set();
@@ -243,13 +244,13 @@ function setupFilters() {
         }
         var reg;
         try {
-            reg = new RegExp(filter)
+            reg = new RegExp(filter);
         } catch(e) {
             // anon is a baka
             console.log(e);
             continue;
         }
-        customFilters.push([type, reg])
+        customFilters.push([type, reg]);
     }
 }
 
@@ -596,8 +597,9 @@ function setObservers() {
                 // still editing
                 if (postItself.getAttribute("class").includes("editing") || postItself.getAttribute("class").includes("reply-form")) {
                     // add Format button to posts the user is making
-                    if (currentlyEnabledOptions.has("annoyingFormatting") && postItself.getAttribute("class").includes("reply-form")) {
-                        addFormatButton(postItself);
+                    if (postItself.getAttribute("class").includes("reply-form")) {
+                        if (currentlyEnabledOptions.has("annoyingFormatting")) addFormatButton(postItself);
+                        if (currentlyEnabledOptions.has("preSubmitOption")) overrideDoneButton(postItself);
                     }
                     // but don't do anything else to editing posts
                     return;
@@ -887,6 +889,40 @@ function downloadAll() {
                     anchor.click();
         }
     }
+}
+
+// override #d7777(7777)
+function overrideDoneButton(postItself) {
+    if (document.getElementById("overrided-done-button")) {
+        // button already exists
+        return;
+    }
+
+    var button = document.createElement("input");
+    button.name = "over-done";
+    button.value = "Done";
+    button.type = "button";
+    button.id = "overrided-done-button";
+    button.onclick = editPostAndSubmit;
+
+    var controls = document.getElementById("post-controls");
+    controls.children[0].style.display = "none";
+    controls.insertBefore(button, controls.children[0].nextSibling);
+}
+
+function editPostAndSubmit() {
+    var input = document.getElementById("text-input");
+    handlePreSubmit(input);
+    var evt = document.createEvent('HTMLEvents');
+    evt.initEvent('input', false, true);
+    input.dispatchEvent(evt);
+    document.getElementById("post-controls").children[0].click();
+}
+
+// All functions here must edit "input.value". This is the post written content.
+function handlePreSubmit(input) {
+    console.log("pre-submit log");
+    // Put memes here
 }
 
 setup();
