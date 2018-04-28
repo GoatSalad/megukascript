@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.3.0
+// @version     3.3.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -585,11 +585,23 @@ function setObservers() {
                 }
             } else {
                 // check what was added
-                var postItself = mutation.addedNodes[0];
-                if (postItself.nodeName != "ARTICLE") {
+                var postItself;
+                if (mutation.target.nodeName == "BLOCKQUOTE") {
+                    // could be updating the content of an existing post
+                    // try to find the post itself
+                    if (mutation.target.parentNode &&
+                        mutation.target.parentNode.parentNode &&
+                        mutation.target.parentNode.parentNode.nodeName == "ARTICLE") {
+                        postItself = mutation.target.parentNode.parentNode;
+                    }
+                } else if (mutation.addedNodes[0].nodeName == "ARTICLE") {
+                    postItself = mutation.addedNodes[0];
+                }
+
+                if (postItself == undefined) {
                     return;
                 }
-                var postContent = mutation.addedNodes[0].getElementsByClassName("post-container")[0];
+                var postContent = postItself.getElementsByClassName("post-container")[0];
                 if (postContent == undefined) {
                     return;
                 }
@@ -921,7 +933,6 @@ function editPostAndSubmit() {
 
 // All functions here must edit "input.value". This is the post written content.
 function handlePreSubmit(input) {
-    console.log("pre-submit log");
     // Put memes here
 }
 
