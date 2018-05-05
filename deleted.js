@@ -3,9 +3,18 @@ var fetchingModlog = false;
 var postsToCheck = [];
 var postsToCheckAgain = [];
 
-function checkForDeletedPost(post) {
-    if (post.parentNode.classList.contains("deleted") &&
-        post.parentNode.querySelector('text[style="color: red;"]') == null) {
+function shouldHandleDeleted(post) {
+    return (post.parentNode.classList.contains("deleted") &&
+            post.parentNode.querySelector(':scope > text[style="color: red;"]') == null);
+}
+
+function shouldHandleBanned(post) {
+    return (post.querySelector('.admin.banned') != null &&
+            post.querySelector('text[style="color: red;"]') == null);
+}
+
+function checkForDeletedOrBannedPost(post) {
+    if (shouldHandleDeleted(post) || shouldHandleBanned(post)) {
         if (modlog == undefined && !fetchingModlog) {
             //get it now
             fetchModlog();
@@ -54,16 +63,42 @@ function checkForPostInModlog(posts) {
     for (var i = 0; i < posts.length; i++) {
         var post = posts[i];
         var id = post.parentNode.id.substring(1);
-        var delNode = post.parentNode.getElementsByClassName("deleted-toggle")[0];
-        var matches = modlog.match(new RegExp("<td>Delete post<\/td><td>([^<]*)<\/td><td><a class=\"post-link\" data-id=\"" + id + "\""));
-        // posts deleted a long time ago may no longer have entries in the mod-log
-        if (matches != null && matches[1] != undefined && delNode != undefined) {
-            // add the text below the deleted icon
-            var txt = document.createElement("text");
-            txt.textContent = "Deleted by " + matches[1];
-            txt.style.color = "red";
-            delNode.parentNode.insertBefore(txt, delNode.nextSibling);
-        } else {
+        var retry = false;
+        if (shouldHandleDeleted(post)) {
+            var delNode = post.parentNode.getElementsByClassName("deleted-toggle")[0];
+            var matches = modlog.match(new RegExp("<td>Delete post<\/td><td>([^<]*)<\/td><td><a class=\"post-link\" data-id=\"" + id + "\""));
+            // posts deleted a long time ago may no longer have entries in the mod-log
+            if (matches != null && matches[1] != undefined && delNode != undefined) {
+                // add the text below the deleted icon
+                var txt = document.createElement("text");
+                txt.textContent = "Deleted by " + matches[1];
+                txt.style.color = "red";
+                delNode.parentNode.insertBefore(txt, delNode.nextSibling);
+            } else {
+                retry = true;
+            }
+        }
+        if (shouldHandleBanned(post)) {
+            var banNode = post.querySelector('.admin.banned');
+            //Type By Post Time Reason Duration
+            var banMatches = modlog.match(new RegExp("<td>Ban<\/td>"+
+                                                     "<td>((?:(?!<\/td>).)+)<\/td>"+
+                                                     "<td><a class=\"post-link\" data-id=\"" + id + "\"(?:(?!<\/td>).)+<\/td>"+
+                                                     "<td>(?:(?!<\/td>).)+<\/td>"+
+                                                     "<td>((?:(?!<\/td>).)+)<\/td>"+
+                                                     "<td>((?:(?!<\/td>).)+)<\/td>"));
+            // posts deleted a long time ago may no longer have entries in the mod-log
+            if (banMatches != null && banMatches[1] != undefined && banNode != undefined) {
+                // add the text below the banned message
+                var banTxt = document.createElement("div");
+                banTxt.textContent = "\nBanned by " + banMatches[1] + " for " + banMatches[2] + " (" + banMatches[3] + ")";
+                banTxt.style.color = "red";
+                banNode.parentNode.insertBefore(banTxt, banNode.nextSibling);
+            } else {
+                retry = true;
+            }
+        }
+        if (retry) {
             result.push(post);
         }
     }
