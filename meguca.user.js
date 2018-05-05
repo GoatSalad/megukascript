@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.3.1
+// @version     3.4.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -36,7 +36,7 @@ const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                       ["chuuOption", "Enables receivement of chuu~s"],
                       ["cancelposters", "Dumb cancelposters"],
                       ["showDeletedPosts", "Show deleted posts"],
-                      ["showWhoDeletedPosts", "Show who deleted posts"],
+                      ["showWhoDeletedPosts", "Show who deleted/banned posts"],
                       ["filterPosts", "Filter posts"],
                       ["preSubmitOption", "Enables pre-submit post processing (necessary for some functions)"]];
 
@@ -313,7 +313,7 @@ function handlePost(post) {
         showDeletedPost(post);
     }
     if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
-        checkForDeletedPost(post);
+        checkForDeletedOrBannedPost(post);
     }
     if (currentlyEnabledOptions.has("filterPosts")) {
         filterPost(post);
@@ -533,7 +533,7 @@ function setObservers() {
                     var postContent = post.getElementsByClassName("post-container")[0];
                     if (postContent != undefined) {
                         if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
-                            checkForDeletedPost(postContent);
+                            checkForDeletedOrBannedPost(postContent);
                         }
                         if (currentlyEnabledOptions.has("showDeletedPosts")) {
                             showDeletedPost(postContent);
