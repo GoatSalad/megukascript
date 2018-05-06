@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.4.0
+// @version     3.4.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
