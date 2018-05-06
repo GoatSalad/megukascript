@@ -10,7 +10,7 @@ function shouldHandleDeleted(post) {
 
 function shouldHandleBanned(post) {
     return (post.querySelector('.admin.banned') != null &&
-            post.querySelector('text[style="color: red;"]') == null);
+            post.querySelector('div[style="color: red;"]') == null);
 }
 
 function checkForDeletedOrBannedPost(post) {
