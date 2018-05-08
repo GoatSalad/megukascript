@@ -9,8 +9,8 @@ function shouldHandleDeleted(post) {
 }
 
 function shouldHandleBanned(post) {
-    return (post.querySelector('.admin.banned') != null &&
-            post.querySelector('div[style="color: red;"]') == null);
+    return (post.querySelector('.admin.banned:not(.banMessage)') != null &&
+            post.querySelector('.banMessage') == null);
 }
 
 function checkForDeletedOrBannedPost(post) {
@@ -79,7 +79,7 @@ function checkForPostInModlog(posts) {
             }
         }
         if (shouldHandleBanned(post)) {
-            var banNode = post.querySelector('.admin.banned');
+            var banNode = post.querySelector('.admin.banned:not(.banMessage)');
             //Type By Post Time Reason Duration
             var banMatches = modlog.match(new RegExp("<td>Ban<\/td>"+
                                                      "<td>((?:(?!<\/td>).)+)<\/td>"+
@@ -90,9 +90,10 @@ function checkForPostInModlog(posts) {
             // posts deleted a long time ago may no longer have entries in the mod-log
             if (banMatches != null && banMatches[1] != undefined && banNode != undefined) {
                 // add the text below the banned message
-                var banTxt = document.createElement("div");
+                var banTxt = document.createElement("b");
                 banTxt.textContent = "\nBanned by " + banMatches[1] + " for " + banMatches[2] + " (" + banMatches[3] + ")";
-                banTxt.style.color = "red";
+                banTxt.innerHTML = "<br>" + banTxt.innerHTML;
+                banTxt.classList = "admin banned banMessage";
                 banNode.parentNode.insertBefore(banTxt, banNode.nextSibling);
             } else {
                 retry = true;
