@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.4.2
+// @version     3.4.3
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -596,7 +596,7 @@ function setObservers() {
                     }
                 } else if (mutation.addedNodes[0].nodeName == "ARTICLE") {
                     postItself = mutation.addedNodes[0];
-                } else if (mutation.addedNodes[0].classList.contains("admin","banned")) {
+                } else if (mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains("admin","banned")) {
                     if (currentlyEnabledOptions.has("showWhoDeletedPosts")) {
                         checkForDeletedOrBannedPost(mutation.target);
                     }
