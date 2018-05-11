@@ -71,7 +71,7 @@ function checkForPostInModlog(posts) {
             if (matches != null && matches[1] != undefined && delNode != undefined) {
                 // add the text below the deleted icon
                 var txt = document.createElement("text");
-                txt.textContent = "Deleted by " + matches[1];
+                txt.innerHTML = "Deleted by " + matches[1];
                 txt.style.color = "red";
                 delNode.parentNode.insertBefore(txt, delNode.nextSibling);
             } else {
@@ -91,8 +91,7 @@ function checkForPostInModlog(posts) {
             if (banMatches != null && banMatches[1] != undefined && banNode != undefined) {
                 // add the text below the banned message
                 var banTxt = document.createElement("b");
-                banTxt.textContent = "\nBanned by " + banMatches[1] + " for " + banMatches[2] + " (" + banMatches[3] + ")";
-                banTxt.innerHTML = "<br>" + banTxt.innerHTML;
+                banTxt.innerHTML = "<br>Banned by " + banMatches[1] + " for " + banMatches[2] + " (" + banMatches[3] + ")";
                 banTxt.classList = "admin banned banMessage";
                 banNode.parentNode.insertBefore(banTxt, banNode.nextSibling);
             } else {
