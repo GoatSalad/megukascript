@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.4.4
+// @version     3.4.5
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -30,7 +30,6 @@ const onOffOptions = [["edenOption", "Eden Now Playing Banner"],
                       ["imgsekritPosting", "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"],
                       ["enablemegucaplayer","Enable music player"],
                       ["megucaplayerOption", "Show music player<br>"],
-                      ["imagePaste", "Upload pasted images"],
                       ["annoyingFormatting", "Annoying formatting button"],
                       ["mathOption", "Enables math parsing"],
                       ["chuuOption", "Enables receivement of chuu~s"],
@@ -152,6 +151,20 @@ function hackLatsOptions() {
     };
 
     document.getElementById("secretButton").onclick = secretButtonPressed;
+
+    document.getElementById("hidetext").addEventListener('paste', function(e){
+        var files = e.clipboardData.files;
+        // check if a file was pasted
+        if (files.length == 1) {
+            var secretImage = document.getElementById("secret_image");
+
+            if (secretImage != undefined) {
+                secretImage.files = files;
+                secretImage.javascriptIsFuckingDumb = files[0]; // secretImage.files seems to get cleared automatically
+                e.stopPropagation();
+            }
+        }
+    });
 
     document.getElementById("customFilters").value = customFilterText;
     document.getElementById("saveFilters").onclick = function() {
@@ -821,66 +834,6 @@ function showFilteredPost() {
     }
 }
 
-function setupImagePaste() {
-    var tc = document.getElementById("thread-container");
-    if (!tc) return;
-    tc.addEventListener('paste', function(e){
-        var files = e.clipboardData.files;
-        // check if a file was pasted
-        if (files.length == 1) {
-            var possibleInputs = document.getElementsByName("image");
-            var realInput;
-            for (var i = 0; i < possibleInputs.length; i++) {
-                if (possibleInputs[i].offsetParent != null) {
-                    realInput = possibleInputs[i];
-                    break;
-                }
-            }
-            if (realInput == undefined) {
-                // reply isn't started yet, click the button
-                var evt = document.createEvent('HTMLEvents');
-                evt.initEvent('click', true, false);
-                evt.which = 1;
-                var replyButton = document.querySelector("aside.posting > a");
-                replyButton.dispatchEvent(evt);
-
-                // try to find the input field again
-                possibleInputs = document.getElementsByName("image");
-                for (var i = 0; i < possibleInputs.length; i++) {
-                    if (possibleInputs[i].offsetParent != null) {
-                        realInput = possibleInputs[i];
-                        break;
-                    }
-                }
-            }
-
-            if (realInput != undefined) {
-                realInput.files = files;
-                var evt = document.createEvent('HTMLEvents');
-                evt.initEvent('change', false, true);
-                realInput.dispatchEvent(evt);
-            }
-        }
-    });
-
-    if (currentlyEnabledOptions.has("sekritPosting")) {
-        var hideBox = document.getElementById("hidetext");
-        if (!hideBox) return;
-        hideBox.addEventListener('paste', function(e){
-            var files = e.clipboardData.files;
-            // check if a file was pasted
-            if (files.length == 1) {
-                var secretImage = document.getElementById("secret_image");
-
-                if (secretImage != undefined) {
-                    secretImage.files = files;
-                    secretImage.javascriptIsFuckingDumb = files[0]; // secretImage.files seems to get cleared automatically
-                }
-            }
-        });
-    }
-}
-
 function setup() {
     getCurrentOptions();
     insertCuteIntoCSS();
@@ -890,7 +843,6 @@ function setup() {
     hackLatsOptions();
     if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
     if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
-    if (currentlyEnabledOptions.has("imagePaste")) setupImagePaste();
 }
 
 function downloadAll() {
