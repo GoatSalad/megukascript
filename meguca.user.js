@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.4.5
+// @version     3.4.6
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -674,7 +674,7 @@ function formatPostText() {
 
 function formatWord(s) {
     // pick a random format and add it to both sides of the word
-    var format = ["~~","**","__","``"][Math.floor(Math.random()*4)];
+    var format = ["~~","**","@@","``"][Math.floor(Math.random()*4)];
     return format + s + format;
 }
 
