@@ -97,9 +97,9 @@ const optionsDescription = {
       "text",
       "Meguca has already integrated or changed enough to make these obsolete."
     ],
-    [("edenOption", "Eden Now Playing Banner")],
-    ["cancelposters", "Dumb cancelposters"],
-    ["showWhoDeletedPosts", "Show who deleted/banned posts"]
+    ["checkbox", "edenOption", "Eden Now Playing Banner"],
+    ["checkbox", "cancelposters", "Dumb cancelposters"],
+    ["checkbox", "showWhoDeletedPosts", "Show who deleted/banned posts"]
   ]
 };
 
@@ -256,14 +256,44 @@ function createMenuButt(parent, tabParent, buttName, butt_id) {
 
 function createMenuTabContent(parent, tabName, tab_id) {
   const tabContent = document.createElement("div");
-  tabContent.innerHTML = "<p>" + tabName + "</p>";
   tabContent.style.display = tab_id === 0 ? "block" : "none";
 
-  attr = document.createAttribute("data-id");
+  const attr = document.createAttribute("data-id");
   attr.value = tab_id;
   tabContent.setAttributeNode(attr);
 
+  tabItems = optionsDescription[tabName];
+  tabItems.forEach(item => {
+    if (item[0] === "checkbox")
+      tabContent.appendChild(createMenuCheckBox(item));
+  });
+
   return tabContent;
+}
+
+function createElementFromHTML(htmlString) {
+  var div = document.createElement("div");
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes
+  return div;
+}
+
+function createMenuCheckBox(item) {
+  console.log(item);
+  const htmlString =
+    '<input type="checkbox" name=' +
+    item[1] +
+    " id=" +
+    item[1] +
+    "> <label for=" +
+    item[1] +
+    ">" +
+    item[2] +
+    "</label><br>";
+  const res = createElementFromHTML(htmlString);
+  console.log(res);
+  return res;
 }
 
 function hackLatsOptions() {
