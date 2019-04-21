@@ -18,7 +18,91 @@ const defaultFiletypes = ".jpg .png .gif";
 var chuuCount = 0;
 
 // Things the user can turn on or off, add your new feature to this list
-// For more complicated options, add them to the hackLatsOptions and getCurrentOptions functions
+// All options will be auto generated. What you need to put:
+// text: plain text
+// checkbox: paramName, description
+// input: paramName, defaultValGetter, description[, customButtonCallback[, customButtonDescription]]
+// textArea: paramName, defaultValGetter, description[, customButtonCallback[, customButtonDescription]]
+// fileInput: callback
+function mock() {}
+
+const optionsDescription = {
+  "#Commands and General": [
+    ["text", "Commands and gimmicks for your posts"],
+    ["checkbox", "decideOption", "Decision Coloring"],
+    ["checkbox", "sharesOption", "Shares Formatting"],
+    ["checkbox", "mathOption", "Enables math parsing"],
+    ["checkbox", "chuuOption", "Enables receivement of chuu~s"],
+    [("input", "vibration", () => vibrationDuration, "Vibration Duration")],
+    [("input", "flashing", () => flashingDuration, "Flashing Duration")]
+  ],
+  "Post Parsing": [
+    ["text", "These options parse posts and then do something to them"],
+    ["checkbox", "dumbPosters", "Dumb xposters"],
+    ["checkbox", "pyuOption", "Pyu Coloring~"],
+    ["checkbox", "dumbblanc", "dumb blancposters, not cute"],
+    ["checkbox", "showDeletedPosts", "Show deleted posts"],
+    ["checkbox", "filterPosts", "Filter posts"],
+    [
+      "textarea",
+      "filterArea",
+      () => customFilterText,
+      "Custom Filters:",
+      mock //saveCustomFilters
+    ],
+    [
+      "checkbox",
+      "preSubmitOption",
+      "Enables pre-submit post processing (disable this for now)"
+    ]
+  ],
+  "Sekrit Posting": [
+    ["text", "The infamous sekrit posting. Don't let the cops find you"],
+    ["checkbox", "sekritPosting", "Secret Posting"],
+    ["checkbox", "imgsekritPosting", "Image Secret Posting"],
+    [
+      "input",
+      () => "",
+      "Encode text",
+      mock, //addSekritPostingToPost,
+      "Convert & Input"
+    ],
+    ["fileInput", mock /*addSekritImagePost*/]
+  ],
+  "FUN STUFF": [
+    ["text", "TANOSHIIIIIIIIIIIIIIIII"],
+    ["checkbox", "screamingPosters", "Vibrate screaming posts"],
+    [
+      "text",
+      "Disable below if you are a firefox cuck and are having problem with pasting"
+    ],
+    ["checkbox", "enablemegucaplayer", "Enable music player"],
+    ["checkbox", "megucaplayerOption", "Show music player"],
+    ["checkbox", "annoyingFormatting", "Annoying formatting button"],
+    [
+      "checkbox",
+      "skeletonCount",
+      "Shows humans / skeletons instead of humans / total"
+    ],
+    [
+      "input",
+      "stealFileInput",
+      "Steal all files ending with",
+      mock, //stealFiles,
+      "Steal files"
+    ]
+  ],
+  Deprecated: [
+    [
+      "text",
+      "Meguca has already integrated or changed enough to make these obsolete."
+    ],
+    [("edenOption", "Eden Now Playing Banner")],
+    ["cancelposters", "Dumb cancelposters"],
+    ["showWhoDeletedPosts", "Show who deleted/banned posts"]
+  ]
+};
+
 const onOffOptions = [
   ["edenOption", "Eden Now Playing Banner"],
   ["pyuOption", "Pyu Coloring~"],
@@ -100,7 +184,6 @@ function addScriptOptionMenu() {
   modalOverlay.children[0].classList.forEach(c =>
     newOptionsMenu.classList.add(c)
   );
-  newOptionsMenu.innerHTML = "<p>pyupyu shitai</p>";
   modalOverlay.appendChild(newOptionsMenu);
 
   // Add click listener to self button
@@ -109,7 +192,7 @@ function addScriptOptionMenu() {
       if (modal.id !== "megukascript-options") modal.style.display = "none";
     });
     newOptionsMenu.style.display =
-      newOptionsMenu.style.display == "none" ? "block" : "none";
+      newOptionsMenu.style.display === "none" ? "block" : "none";
   };
 
   // Add hide click listener to other buttons
@@ -119,6 +202,68 @@ function addScriptOptionMenu() {
         newOptionsMenu.style.display = "none";
       });
   });
+
+  addOptionMenuButts(newOptionsMenu);
+}
+
+function addOptionMenuButts(parent) {
+  const buttHeader = document.createElement("div");
+  const divider = document.createElement("hr");
+  const tabContainer = document.createElement("div");
+
+  parent.appendChild(buttHeader);
+  parent.appendChild(divider);
+  parent.appendChild(tabContainer);
+
+  Object.keys(optionsDescription).forEach((optionTab, index) => {
+    buttHeader.appendChild(
+      createMenuButt(buttHeader, tabContainer, optionTab, index)
+    );
+    tabContainer.appendChild(
+      createMenuTabContent(tabContainer, optionTab, index)
+    );
+  });
+}
+
+// ahn~
+function createMenuButt(parent, tabParent, buttName, butt_id) {
+  const butt = document.createElement("a");
+  butt.classList.add("tab-link");
+  butt.innerHTML = buttName;
+  if (butt_id === 0) butt.classList.add("tab-sel");
+  butt.style.padding = "7px";
+
+  attr = document.createAttribute("data-id");
+  attr.value = butt_id;
+  butt.setAttributeNode(attr);
+
+  butt.onclick = () => {
+    parent.querySelectorAll(".tab-sel").forEach(el => {
+      el.classList.remove("tab-sel");
+    });
+    butt.classList.add("tab-sel");
+
+    tabParent.childNodes.forEach(content => {
+      // >That string comparison
+      // Fuck JS tbh
+      content.style.display =
+        content.getAttribute("data-id") === "" + butt_id ? "block" : "none";
+    });
+  };
+
+  return butt;
+}
+
+function createMenuTabContent(parent, tabName, tab_id) {
+  const tabContent = document.createElement("div");
+  tabContent.innerHTML = "<p>" + tabName + "</p>";
+  tabContent.style.display = tab_id === 0 ? "block" : "none";
+
+  attr = document.createAttribute("data-id");
+  attr.value = tab_id;
+  tabContent.setAttributeNode(attr);
+
+  return tabContent;
 }
 
 function hackLatsOptions() {
@@ -1097,6 +1242,7 @@ function setup() {
   readPostsForData();
   if (document.getElementById("thread-container") != null) setObservers();
   hackLatsOptions();
+  addScriptOptionMenu();
   if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
   if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
   if (currentlyEnabledOptions.has("showDeletedPosts"))
