@@ -3,6 +3,34 @@ var fetchingModlog = false;
 var postsToCheck = [];
 var postsToCheckAgain = [];
 
+function watchSocketForPostsDeletedOnCreation() {
+    var w = window.unsafeWindow;
+    w.define("userslut", ["require", "exports", "connection/messages", "client"], function (require, exports, message, client) {
+        function __export(m) {
+            for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+        }
+        Object.defineProperty(exports, "__esModule", { value: true });
+        var oldHandler = message.handlers[1];
+        // listen to create post messages
+        message.handlers[1] = function(data) {
+            oldHandler(data);
+            if (data.moderation && data.moderation.length && data.moderation.length > 0) {
+                for (var i = 0; i < data.moderation.length; i++) {
+                    var m = data.moderation[i];
+                    if (m.type == 2) {
+                        // post was deleted
+                        addDeletedMessage(document.getElementById("p" + data.id), m.by);
+                    }
+                }
+            }
+        };
+    });
+    // this doesn't seem to work if I call it immediatally, so wait a few seconds for things to finish loading
+    setTimeout(function(){
+        w.require(["userslut"], function(a){}, "a", false, undefined);
+    }, 5000);
+}
+
 function shouldHandleDeleted(post) {
     return (post.parentNode.classList.contains("deleted") &&
             post.parentNode.querySelector(':scope > text[style="color: red;"]') == null);
@@ -58,6 +86,17 @@ function updateDeletedPosts() {
     }
 }
 
+function addDeletedMessage(entirePost, by) {
+    var delNode = entirePost.getElementsByClassName("deleted-toggle")[0];
+    if (delNode != undefined) {
+        // add the text below the deleted icon
+        var txt = document.createElement("text");
+        txt.innerHTML = "Deleted by " + by;
+        txt.style.color = "red";
+        delNode.parentNode.insertBefore(txt, delNode.nextSibling);
+    }
+}
+
 function checkForPostInModlog(posts) {
     var result = [];
     for (var i = 0; i < posts.length; i++) {
@@ -65,15 +104,10 @@ function checkForPostInModlog(posts) {
         var id = post.parentNode.id.substring(1);
         var retry = false;
         if (shouldHandleDeleted(post)) {
-            var delNode = post.parentNode.getElementsByClassName("deleted-toggle")[0];
             var matches = modlog.match(new RegExp("<td>Delete post<\/td><td>([^<]*)<\/td><td><a class=\"post-link\" data-id=\"" + id + "\""));
             // posts deleted a long time ago may no longer have entries in the mod-log
-            if (matches != null && matches[1] != undefined && delNode != undefined) {
-                // add the text below the deleted icon
-                var txt = document.createElement("text");
-                txt.innerHTML = "Deleted by " + matches[1];
-                txt.style.color = "red";
-                delNode.parentNode.insertBefore(txt, delNode.nextSibling);
+            if (matches != null && matches[1] != undefined) {
+                addDeletedMessage(post.parentNode, matches[1]);
             } else {
                 retry = true;
             }

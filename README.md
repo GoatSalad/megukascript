@@ -4,7 +4,6 @@ Sandbox for some features that eventually got added to the meguca website.<br>
 No buttcoin miners (yet!)
 
 ## Features
-<a href="https://comfy.moe/tawdnt.webm">A quick demonstration of various features</a>  <br />
 All of the features can be disabled invidually in the options panel. You need to refresh your browser to see the changes.
 
 ### Pyu coloring
@@ -50,3 +49,4 @@ Filter posts that match regex.  Prefix your filter with "text:", "name:", "id:",
  <li>Install Tampermonkey for <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?  hl=en">Chrome</a>/<a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/">Firefox</a></li>
  <li><a href="../../raw/master/meguca.user.js">Click here</a>
 </ul>
+Sometimes after an update the script may stop working.  In that case, try uninstalling the scrip then reinstalling it.
