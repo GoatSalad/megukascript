@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.7.1
+// @version     3.8
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -19,36 +19,86 @@ var chuuCount = 0;
 
 // Things the user can turn on or off, add your new feature to this list
 // All options will be auto generated. What you need to put:
-// text: plain text
+// text: PlainText (HTML is fine too)
 // checkbox: paramName, description
-// input: paramName, defaultValGetter, description[, customButtonCallback[, customButtonDescription]]
-// textArea: paramName, defaultValGetter, description[, customButtonCallback[, customButtonDescription]]
-// fileInput: callback
-function mock() {}
-
+// input: paramName, defaultValGetter, description, customButtonCallbackGetter[, customButtonDescription[, customButtonId]]]
+// textarea: paramName, defaultValGetter, description, customButtonCallbackGetter[, customButtonDescription]]
+// fileInput: paramName
+// division: Adds a cool <hr/>
+//
+// Everything needs to be getters because >javascript and because the options are declared before many of those funcs
+// Be sure to add more options on getCurrentOptions() if you need them
 const optionsDescription = {
   "#Commands and General": [
     ["text", "Commands and gimmicks for your posts"],
-    ["checkbox", "decideOption", "Decision Coloring"],
-    ["checkbox", "sharesOption", "Shares Formatting"],
-    ["checkbox", "mathOption", "Enables math parsing"],
-    ["checkbox", "chuuOption", "Enables receivement of chuu~s"],
-    [("input", "vibration", () => vibrationDuration, "Vibration Duration")],
-    [("input", "flashing", () => flashingDuration, "Flashing Duration")]
+    [
+      "checkbox",
+      "decideOption",
+      "Decision Coloring (Used for picking decisions like in: a, <b>b</b>, c #d3(2)"
+    ],
+    [
+      "checkbox",
+      "sharesOption",
+      "Shares Formatting (Works for highlighting when rolling for Lastation, Lowee, etc..."
+    ],
+    [
+      "checkbox",
+      "mathOption",
+      "Enables math parsing (Do math with #math(2 + 2). Supports +, -, /, *, log (on base 2) and ^)"
+    ],
+    [
+      "checkbox",
+      "chuuOption",
+      "Enables receivement of chuu~s (chuu cuties with #chuu([postnumber]) and watch them awawa<br>"
+    ],
+    [
+      "input",
+      "vibration",
+      () => vibrationDuration,
+      "Vibration Duration: ",
+      value => saveToLocalStorageInt("vibration", value)
+    ],
+    [
+      "input",
+      "flashing",
+      () => flashingDuration,
+      "Flashing Duration: ",
+      value => saveToLocalStorageInt("flashing", value)
+    ],
+    [
+      "text",
+      '<br><a href="https://github.com/goatsalad/megukascript/blob/master/README.md" target="_blank">How do I use this?</a>' +
+        '<br>You have received <span id="chuu-counter">' +
+        localStorage.getItem("chuuCount", chuuCount) +
+        "</span> chuu~'s"
+    ]
   ],
   "Post Parsing": [
-    ["text", "These options parse posts and then do something to them"],
-    ["checkbox", "dumbPosters", "Dumb xposters"],
-    ["checkbox", "pyuOption", "Pyu Coloring~"],
-    ["checkbox", "dumbblanc", "dumb blancposters, not cute"],
-    ["checkbox", "showDeletedPosts", "Show deleted posts"],
-    ["checkbox", "filterPosts", "Filter posts"],
+    ["text", "These options parse posts and then do something (dumb) to them"],
+    [
+      "checkbox",
+      "dumbPosters",
+      'Dumb xposters (Puts a "dumb xposter" label next to dumb xposters)'
+    ],
+    ["checkbox", "pyuOption", "Pyu Coloring~ (Colors every thousandth pyu)"],
+    [
+      "checkbox",
+      "dumbblanc",
+      "dumb blancposters, not cute (Enable if you think blancposters aren't cute aka never)"
+    ],
+    [
+      "checkbox",
+      "showDeletedPosts",
+      "Show deleted posts (Auto-expand deleted posters)"
+    ],
+    ["checkbox", "filterPosts", "Filter posts (Enable post filtering)"],
     [
       "textarea",
       "filterArea",
       () => customFilterText,
       "Custom Filters:",
-      mock //saveCustomFilters
+      value => saveToLocalStorageStr("customFilterText", value),
+      "Save filters"
     ],
     [
       "checkbox",
@@ -58,44 +108,73 @@ const optionsDescription = {
   ],
   "Sekrit Posting": [
     ["text", "The infamous sekrit posting. Don't let the cops find you"],
-    ["checkbox", "sekritPosting", "Secret Posting"],
-    ["checkbox", "imgsekritPosting", "Image Secret Posting"],
+    [
+      "checkbox",
+      "sekritPosting",
+      "Secret Posting (Decypher the sekritposting)"
+    ],
+    [
+      "checkbox",
+      "imgsekritPosting",
+      "Image Secret Posting (Decypher the imgsekritposting (hover to analyze))<br>"
+    ],
     [
       "input",
+      "hidetext",
       () => "",
-      "Encode text",
-      mock, //addSekritPostingToPost,
-      "Convert & Input"
+      "Encode text: ",
+      () => secretButtonPressed(),
+      "Convert & Input",
+      "secretButton"
     ],
-    ["fileInput", mock /*addSekritImagePost*/]
+    ["fileInput", "secret_image"]
   ],
   "FUN STUFF": [
-    ["text", "TANOSHIIIIIIIIIIIIIIIII"],
-    ["checkbox", "screamingPosters", "Vibrate screaming posts"],
     [
       "text",
-      "Disable below if you are a firefox cuck and are having problem with pasting"
+      "<b>TANOSHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</b>"
     ],
-    ["checkbox", "enablemegucaplayer", "Enable music player"],
-    ["checkbox", "megucaplayerOption", "Show music player"],
-    ["checkbox", "annoyingFormatting", "Annoying formatting button"],
+    ["checkbox", "screamingPosters", "Vibrate screaming posts"],
+    [
+      "checkbox",
+      "annoyingFormatting",
+      "Annoying formatting button (Enables a very useful button next to text form)"
+    ],
     [
       "checkbox",
       "skeletonCount",
       "Shows humans / skeletons instead of humans / total"
     ],
     [
+      "checkbox",
+      "skeletonLabels",
+      "Show human / skeleton labels on the numbers when the above option is enabled"
+    ],
+    [
       "input",
       "stealFileInput",
-      "Steal all files ending with",
-      mock, //stealFiles,
+      () => defaultFiletypes,
+      "Steal all files ending with: ",
+      value => downloadAll(value),
       "Steal files"
-    ]
+    ],
+    ["division"],
+    [
+      "text",
+      "<b>Meguca Music Player (aka. MMP)</b><br><br>" +
+        "Automatically grabs whenever audio files are posted on the thread<br>" +
+        "and puts them into a nice playlist for your very own comfort.<br>" +
+        "Will loop around on reaching last song, even.<br>" +
+        "F5 if you're going from disabled to enabled.<br>" +
+        "Disable below if you are a firefox cuck and are having problem with pasting.<br>"
+    ],
+    ["checkbox", "enablemegucaplayer", "Enable music player"],
+    ["checkbox", "megucaplayerOption", "Show music player"]
   ],
   Deprecated: [
     [
       "text",
-      "Meguca has already integrated or changed enough to make these obsolete."
+      "Meguca has already integrated these or changed enough to make these obsolete."
     ],
     ["checkbox", "edenOption", "Eden Now Playing Banner"],
     ["checkbox", "cancelposters", "Dumb cancelposters"],
@@ -117,7 +196,7 @@ const onOffOptions = [
     "Image Secret Posting<br><br>(Check off the following option if you have drag and drop problems)"
   ],
   ["enablemegucaplayer", "Enable music player"],
-  ["megucaplayerOption", "Show music player<br>"],
+  ["megucaplayerOptionOld", "Show music player<br>"],
   ["annoyingFormatting", "Annoying formatting button"],
   ["mathOption", "Enables math parsing"],
   ["chuuOption", "Enables receivement of chuu~s"],
@@ -157,6 +236,16 @@ const filterTypes = new Map([
   ["flag", ".flag"],
   ["filename", "figcaption > a:not(.image-toggle)"]
 ]);
+
+function saveToLocalStorageInt(id, value) {
+  var num = Number(value);
+  if (Number.isNaN(num)) num = 60;
+  localStorage.setItem(id, num > 60 ? 60 : num);
+}
+
+function saveToLocalStorageStr(id, value) {
+  localStorage.setItem(id, value);
+}
 
 function addScriptOptionMenu() {
   const banner = document.getElementById("banner");
@@ -204,6 +293,7 @@ function addScriptOptionMenu() {
   });
 
   addOptionMenuButts(newOptionsMenu);
+  addExtraConfig();
 }
 
 function addOptionMenuButts(parent) {
@@ -264,23 +354,29 @@ function createMenuTabContent(parent, tabName, tab_id) {
 
   tabItems = optionsDescription[tabName];
   tabItems.forEach(item => {
+    if (item[0] === "text") tabContent.appendChild(createMenuText(item));
     if (item[0] === "checkbox")
       tabContent.appendChild(createMenuCheckBox(item));
+    if (item[0] === "input") tabContent.appendChild(createMenuInput(item));
+    if (item[0] === "textarea")
+      tabContent.appendChild(createMenuTextArea(item));
+    if (item[0] === "division")
+      tabContent.appendChild(createElementFromHTML("<br/><hr/>"));
+    if (item[0] === "fileInput")
+      tabContent.appendChild(createMenuFileInput(item));
   });
 
   return tabContent;
 }
 
 function createElementFromHTML(htmlString) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.innerHTML = htmlString.trim();
 
-  // Change this to div.childNodes to support multiple top-level nodes
   return div;
 }
 
 function createMenuCheckBox(item) {
-  console.log(item);
   const htmlString =
     '<input type="checkbox" name=' +
     item[1] +
@@ -292,113 +388,90 @@ function createMenuCheckBox(item) {
     item[2] +
     "</label><br>";
   const res = createElementFromHTML(htmlString);
-  console.log(res);
+  const inputEl = res.getElementsByTagName("input")[0];
+  inputEl.checked = currentlyEnabledOptions.has(item[1]);
+
+  inputEl.onchange = () => {
+    localStorage.setItem(item[1], inputEl.checked ? "on" : "off");
+  };
+
   return res;
 }
 
-function hackLatsOptions() {
-  var options = document.getElementById("options");
-  var tab_butts = options.getElementsByClassName("tab-butts")[0];
-  var tab_cont = options.getElementsByClassName("tab-cont")[0];
+function createMenuText(item) {
+  const p = document.createElement("p");
+  p.innerHTML = item[1];
 
-  // add checkboxes for each option
-  var new_butt /*lewd*/ =
-    '<a class="tab-link" data-id="5">Meguca Userscript</a>';
-  var new_cont = '<div data-id="5">';
-  for (var i = 0; i < onOffOptions.length; i++) {
-    var id = onOffOptions[i][0];
-    var name = onOffOptions[i][1];
-    new_cont +=
-      '<input type="checkbox" name=' +
-      id +
-      " id=" +
-      id +
-      "> <label for=" +
-      id +
-      ">" +
-      name +
-      "</label><br>";
-  }
+  return p;
+}
 
-  // flashing duration
-  new_cont +=
-    '<input type="textbox" name=flashing id=flashing> <label for=flashing>Flashing Duration</label><br>';
+function createMenuInput(item) {
+  const buttonLabel = item.length > 5 ? item[5] : "Save";
+  const buttonId = item.length > 6 ? item[6] : item[1] + "_button";
+  const htmlString =
+    '<label for="' +
+    item[1] +
+    '">' +
+    item[3] +
+    '</label><input type="textbox" name="' +
+    item[1] +
+    '" id="' +
+    item[1] +
+    '"/><button type="button" id="' +
+    buttonId +
+    '">' +
+    buttonLabel +
+    "</button><br>";
+  const res = createElementFromHTML(htmlString);
 
-  // vibration duration
-  new_cont +=
-    '<input type="textbox" name=vibration id=vibration> <label for=vibration>Vibration Duration</label><br>';
+  const inputEl = res.getElementsByTagName("input")[0];
+  inputEl.value = item[2]();
+  const buttonEl = res.getElementsByTagName("button")[0];
+  buttonEl.onclick = () => {
+    item[4](inputEl.value);
+  };
 
-  // image stealing
-  new_cont +=
-    '<span>Steal all files ending with </span><input type="textbox" name=steal_filetypes id=steal_filetypes><button type="button" id="stealButton">Steal files</button><br>';
+  return res;
+}
 
-  // custom filters
-  new_cont +=
-    "<textarea rows=4 cols=60 id=customFilters style='font-size: 10pt;'></textarea><br>";
-  new_cont +=
-    '<button type="button" id="saveFilters">Save filter changes</button><br>';
+function createMenuTextArea(item) {
+  const buttonLabel = item.length > 5 ? item[5] : "Save";
 
-  // Chuu counter
-  new_cont +=
-    '<br>You have received <span id="chuu-counter">' +
-    chuuCount +
-    "</span> chuu~'s";
+  const htmlString =
+    '<label for="' +
+    item[1] +
+    '">' +
+    item[3] +
+    '</label><br/><textarea rows=4 cols=60 id="' +
+    item[1] +
+    '"></textarea><br/><button type="button" id="' +
+    item[1] +
+    '_button">' +
+    buttonLabel +
+    "</button><br>";
+  const res = createElementFromHTML(htmlString);
 
-  // Linking to github
-  new_cont +=
-    '<br><a href="https://github.com/dasdgdafg/megukascript/blob/master/README.md" target="_blank">How do I use this?</a>';
+  const inputEl = res.getElementsByTagName("textarea")[0];
+  inputEl.value = item[2]();
+  const buttonEl = res.getElementsByTagName("button")[0];
+  buttonEl.onclick = () => {
+    item[4](inputEl.value);
+  };
 
-  var new_sekrit_cont = '<div data-id="6">';
+  return res;
+}
 
-  // hidetext encode
-  new_sekrit_cont +=
-    '<input type="textbox" name=hidetext id=hidetext> <label for=hidetext>Encode Text</label> <button type="button" id="secretButton">Convert & input</button><br>';
+function createMenuFileInput(item) {
+  const htmlString =
+    '<input name="' + item[1] + '" id="' + item[1] + '" type="file">';
+  return createElementFromHTML(htmlString).firstChild;
+}
 
-  // image for secret message
-  new_sekrit_cont +=
-    '<input name="secret_image" id="secret_image" type="file">';
-
-  // Another link to github
-  new_sekrit_cont +=
-    '<br><a href="https://github.com/dasdgdafg/megukascript/blob/master/README.md" target="_blank">How do I use this?</a>';
-
-  // Secret Encoding tab
-  var new_sekrit_butt = '<a class="tab-link" data-id="6">Secret Encoding</a>';
-
-  new_cont += "</div>";
-  new_sekrit_cont += "</div>";
-  tab_butts.innerHTML += new_butt + new_sekrit_butt;
-  tab_cont.innerHTML += new_cont + new_sekrit_cont;
-
-  for (var i = 0; i < onOffOptions.length; i++) {
-    var id = onOffOptions[i][0];
-    // set the correct intial state
-    document.getElementById(id).checked = currentlyEnabledOptions.has(id);
-
-    // set all the handler functions
-    document.getElementById(id).onchange = function() {
-      localStorage.setItem(this.id, this.checked ? "on" : "off");
-    };
-  }
-
+function addExtraConfig() {
+  // For meguca player
   document.getElementById("megucaplayerOption").onclick = mgcPl_optionClicked;
 
-  // flashing duration
-  document.getElementById("flashing").value = flashingDuration;
-  document.getElementById("flashing").onchange = function() {
-    var num = Number(this.value);
-    if (Number.isNaN(num)) num = 60;
-    localStorage.setItem(this.id, this.value > 60 ? 60 : this.value);
-  };
-
-  // vibration duration
-  document.getElementById("vibration").value = vibrationDuration;
-  document.getElementById("vibration").onchange = function() {
-    var num = Number(this.value);
-    if (Number.isNaN(num)) num = 60;
-    localStorage.setItem(this.id, this.value > 60 ? 60 : this.value);
-  };
-
+  // For sekritposting nice enter key listening
   document
     .querySelector("#hidetext")
     .addEventListener("keyup", function(event) {
@@ -407,13 +480,7 @@ function hackLatsOptions() {
       event.preventDefault(); // No need to `return false;`.
     });
 
-  document.getElementById("steal_filetypes").value = defaultFiletypes;
-  document.getElementById("stealButton").onclick = function() {
-    downloadAll();
-  };
-
-  document.getElementById("secretButton").onclick = secretButtonPressed;
-
+  // Extra config for imgsekritposting
   document.getElementById("hidetext").addEventListener("paste", function(e) {
     var files = e.clipboardData.files;
     // check if a file was pasted
@@ -427,15 +494,6 @@ function hackLatsOptions() {
       }
     }
   });
-
-  document.getElementById("customFilters").value = customFilterText;
-  document.getElementById("saveFilters").onclick = function() {
-    customFilterText = document.getElementById("customFilters").value;
-    localStorage.setItem(
-      "customFilterText",
-      document.getElementById("customFilters").value
-    );
-  };
 }
 
 function insertCuteIntoCSS() {
@@ -485,13 +543,16 @@ function getVibrationIterations() {
 }
 
 function getCurrentOptions() {
-  for (var i = 0; i < onOffOptions.length; i++) {
-    var id = onOffOptions[i][0];
-    var setting = localStorage.getItem(id);
-    if (setting != "off") {
-      currentlyEnabledOptions.add(id);
-    }
-  }
+  Object.keys(optionsDescription).forEach(optionsTab => {
+    optionsDescription[optionsTab].forEach(item => {
+      if (item[0] === "checkbox") {
+        const id = item[1];
+        const setting = localStorage.getItem(id);
+        if (setting !== "off") currentlyEnabledOptions.add(id);
+      }
+    });
+  });
+
   flashingDuration = parseFloat(localStorage.getItem("flashing"));
   if (isNaN(flashingDuration)) {
     // assume inifinity if it's not a number
@@ -875,7 +936,6 @@ function findMultipleShitFromAString(s, re) {
 }
 
 // Observer watches the thread
-
 function setObservers() {
   var thread = document.getElementById("thread-container");
 
@@ -1271,7 +1331,6 @@ function setup() {
   insertCuteIntoCSS();
   readPostsForData();
   if (document.getElementById("thread-container") != null) setObservers();
-  hackLatsOptions();
   addScriptOptionMenu();
   if (currentlyEnabledOptions.has("enablemegucaplayer")) mgcPl_setupPlaylist();
   if (currentlyEnabledOptions.has("edenOption")) setUpEdenBanner();
@@ -1279,9 +1338,9 @@ function setup() {
     watchSocketForPostsDeletedOnCreation();
 }
 
-function downloadAll() {
+function downloadAll(value) {
   var posts = document.getElementById("thread-container").children;
-  var filetypes = document.getElementById("steal_filetypes").value.split(" ");
+  var filetypes = value.split(" ");
   for (var i = 0; i < posts.length; i++) {
     if (
       posts[i].tagName.toLowerCase() === "article" &&
