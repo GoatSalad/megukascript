@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.8.1
+// @version     3.8.2
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -52,8 +52,8 @@ const optionsDescription = {
     [
       "checkbox",
       "chuuOption",
-      "Enables receivement of chuu~s",
-      "chuu cuties with #chuu([postnumber]) and watch them awawa<br>"
+      "Enables receivement of chuu~s<br>",
+      "chuu cuties with #chuu([postnumber]) and watch them awawa"
     ],
     [
       "input",
