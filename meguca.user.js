@@ -9,7 +9,7 @@
 // @include     https://chiru.no/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.8
+// @version     3.8.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -20,7 +20,7 @@ var chuuCount = 0;
 // Things the user can turn on or off, add your new feature to this list
 // All options will be auto generated. What you need to put:
 // text: PlainText (HTML is fine too)
-// checkbox: paramName, description
+// checkbox: paramName, description[, textover tooltip]
 // input: paramName, defaultValGetter, description, customButtonCallbackGetter[, customButtonDescription[, customButtonId]]]
 // textarea: paramName, defaultValGetter, description, customButtonCallbackGetter[, customButtonDescription]]
 // fileInput: paramName
@@ -34,22 +34,26 @@ const optionsDescription = {
     [
       "checkbox",
       "decideOption",
-      "Decision Coloring (Used for picking decisions like in: a, <b>b</b>, c #d3(2)"
+      "Decision Coloring",
+      "Used for picking decisions like in: a, <b>b</b>, c #d3(2)"
     ],
     [
       "checkbox",
       "sharesOption",
-      "Shares Formatting (Works for highlighting when rolling for Lastation, Lowee, etc..."
+      "Shares Formatting",
+      "Works for highlighting when rolling for Lastation, Lowee, etc..."
     ],
     [
       "checkbox",
       "mathOption",
-      "Enables math parsing (Do math with #math(2 + 2). Supports +, -, /, *, log (on base 2) and ^)"
+      "Enables math parsing",
+      "Do math with #math(2 + 2). Supports +, -, /, *, log (on base 2) and ^"
     ],
     [
       "checkbox",
       "chuuOption",
-      "Enables receivement of chuu~s (chuu cuties with #chuu([postnumber]) and watch them awawa<br>"
+      "Enables receivement of chuu~s",
+      "chuu cuties with #chuu([postnumber]) and watch them awawa<br>"
     ],
     [
       "input",
@@ -78,20 +82,23 @@ const optionsDescription = {
     [
       "checkbox",
       "dumbPosters",
-      'Dumb xposters (Puts a "dumb xposter" label next to dumb xposters)'
+      "Dumb xposters",
+      '(Puts a "dumb xposter" label next to dumb xposters)'
     ],
-    ["checkbox", "pyuOption", "Pyu Coloring~ (Colors every thousandth pyu)"],
+    ["checkbox", "pyuOption", "Pyu Coloring~", "(Colors every thousandth pyu)"],
     [
       "checkbox",
       "dumbblanc",
-      "dumb blancposters, not cute (Enable if you think blancposters aren't cute aka never)"
+      "dumb blancposters, not cute",
+      "(Enable if you think blancposters aren't cute aka never)"
     ],
     [
       "checkbox",
       "showDeletedPosts",
-      "Show deleted posts (Auto-expand deleted posters)"
+      "Show deleted posts",
+      "(Auto-expand deleted posters)"
     ],
-    ["checkbox", "filterPosts", "Filter posts (Enable post filtering)"],
+    ["checkbox", "filterPosts", "Filter posts", "(Enable post filtering)"],
     [
       "textarea",
       "filterArea",
@@ -103,7 +110,8 @@ const optionsDescription = {
     [
       "checkbox",
       "preSubmitOption",
-      "Enables pre-submit post processing (disable this for now)"
+      "Enables pre-submit post processing (not working)",
+      "Disable this for now"
     ]
   ],
   "Sekrit Posting": [
@@ -111,12 +119,14 @@ const optionsDescription = {
     [
       "checkbox",
       "sekritPosting",
-      "Secret Posting (Decypher the sekritposting)"
+      "Secret Posting",
+      "(Decypher the sekritposting)"
     ],
     [
       "checkbox",
       "imgsekritPosting",
-      "Image Secret Posting (Decypher the imgsekritposting (hover to analyze))<br>"
+      "Image Secret Posting<br>",
+      "(Decypher the imgsekritposting (hover to analyze))"
     ],
     [
       "input",
@@ -138,7 +148,8 @@ const optionsDescription = {
     [
       "checkbox",
       "annoyingFormatting",
-      "Annoying formatting button (Enables a very useful button next to text form)"
+      "Annoying formatting button",
+      "Enables a very useful button next to text form"
     ],
     [
       "checkbox",
@@ -390,6 +401,13 @@ function createMenuCheckBox(item) {
   const res = createElementFromHTML(htmlString);
   const inputEl = res.getElementsByTagName("input")[0];
   inputEl.checked = currentlyEnabledOptions.has(item[1]);
+
+  if (item.length > 3) {
+    const labelEl = res.getElementsByTagName("label")[0];
+    const attrTitle = document.createAttribute("title");
+    attrTitle.value = item[3];
+    labelEl.setAttributeNode(attrTitle);
+  }
 
   inputEl.onchange = () => {
     localStorage.setItem(item[1], inputEl.checked ? "on" : "off");
