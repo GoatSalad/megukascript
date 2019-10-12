@@ -7,6 +7,8 @@
 // @require     deleted.js
 // @include     https://meguca.org/*
 // @include     https://chiru.no/*
+// @include     https://megu.ca/*
+// @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
 // @version     3.8.3
