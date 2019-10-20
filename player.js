@@ -155,14 +155,13 @@ function mgcPl_addNewSong(figcaption) {
     // var titleSpan = songinfo.getElementsByClassName("media-title")[0];
     // var durationSpan = songinfo.getElementsByClassName("media-length")[0];
 
-    // If songInfo has more than 3 children, the penultimate will be artist and the last title
-    // Except for songs that include image and no further info, but we don't talk about those
+    // If songInfo has more than 4 children, the penultimate will be artist and the last title
     const artistSpan =
-      songinfo.children.length > 3
+      songinfo.children.length > 4
         ? songinfo.children[songinfo.children.length - 2]
         : undefined;
     const titleSpan =
-      songinfo.children.length > 3
+      songinfo.children.length > 4
         ? songinfo.children[songinfo.children.length - 1]
         : undefined;
     const durationSpan = songinfo.children[1];
