@@ -11,7 +11,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.8.6
+// @version     3.9.0
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -269,11 +269,21 @@ function addScriptOptionMenu() {
   newOption.id = "banner-megukascript-options";
   newOption.title = "Megukascript Options";
 
+  const musicOption = document.createElement("a");
+  musicOption.id = "toggle-music-player-megukascript";
+  musicOption.title = "Toggle MMP visibility";
+
   // mimics class from other items
-  options[0].classList.forEach(c => newOption.classList.add(c));
+  options[0].classList.forEach(c => {
+    newOption.classList.add(c);
+    musicOption.classList.add(c);
+  });
   newOption.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M2 15s0-6 6-6c4 0 4.5 3.5 7.5 3.5 4 0 4-3.5 4-3.5H22s0 6-6 6c-4 0-5.5-3.5-7.5-3.5-4 0-4 3.5-4 3.5H2"/></svg>';
+  musicOption.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M 21 0 L 8 4.625 C 7.449219 4.808594 7 5.417969 7 5.96875 L 7 17.78125 C 6.546875 17.707031 6.035156 17.714844 5.5 17.84375 C 3.566406 18.316406 2 20.0625 2 21.71875 C 2 23.375 3.566406 24.316406 5.5 23.84375 C 7.410156 23.378906 8.960938 21.699219 9 20.0625 C 9 20.042969 9 20.019531 9 20 L 9 8.28125 L 20 4.34375 L 20 14.78125 C 19.546875 14.707031 19.035156 14.714844 18.5 14.84375 C 16.566406 15.316406 15 17.0625 15 18.71875 C 15 20.375 16.566406 21.316406 18.5 20.84375 C 20.433594 20.371094 22 18.65625 22 17 L 22 1 C 22 0.449219 21.550781 0 21 0 Z"></path></svg>';
 
+  optionsContainer.insertBefore(musicOption, options[options.length - 1]);
   optionsContainer.insertBefore(newOption, options[options.length - 1]);
 
   const modalOverlay = document.getElementById("modal-overlay");
@@ -295,6 +305,11 @@ function addScriptOptionMenu() {
     });
     newOptionsMenu.style.display =
       newOptionsMenu.style.display === "none" ? "block" : "none";
+  };
+
+  // Add functionality to MMP button
+  musicOption.onclick = () => {
+    document.getElementById("megucaplayerOption").click();
   };
 
   // Add hide click listener to other buttons
