@@ -30,7 +30,7 @@ function secretButtonPressed() {
                 len = "0" + len;
 
             hiddenText += len;
-            hiddenText += "secret";
+            hiddenText += "sekret";
             var fr = new FileReader();
             fr.onload = function() {
                 var buffer = this.result;
