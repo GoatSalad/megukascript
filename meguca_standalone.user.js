@@ -8,7 +8,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     1.0.1
+// @version     1.0.2
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -1418,8 +1418,6 @@ function handlePreSubmit(input) {
   // Put memes here
 }
 
-setup();
-
 var modlog;
 var fetchingModlog = false;
 var postsToCheck = [];
@@ -2094,3 +2092,5 @@ function setupSecretObserver() {
     secretConfig
   );
 }
+
+setup();
