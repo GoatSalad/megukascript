@@ -215,7 +215,7 @@ function setupSecretObserver() {
           GM_xmlhttpRequest({
             method: "GET",
             url: img.src,
-            responseType: "blob",
+            responseType: "text",
             onload: function(response) {
               // max message length is 999 bytes + 9 byte header
               var str = response.responseText.substring(

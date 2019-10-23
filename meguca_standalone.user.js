@@ -8,7 +8,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     1.0.2
+// @version     1.0.3
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -2071,7 +2071,7 @@ function setupSecretObserver() {
           GM_xmlhttpRequest({
             method: "GET",
             url: img.src,
-            responseType: "blob",
+            responseType: "text",
             onload: function(response) {
               // max message length is 999 bytes + 9 byte header
               var str = response.responseText.substring(
