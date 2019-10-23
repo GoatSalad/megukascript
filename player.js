@@ -19,8 +19,6 @@ function mgcPl_InsertHtmlAndCSS() {
 function mgcPl_optionClicked() {
   if (document.getElementById("megucaplayerOption").checked) {
     // Load songs and show
-    document.getElementById("megucaplaylist").innerHTML = "";
-    mgcPl_fetchAllSongs();
     var frame = document.getElementById("mgcPlFrame");
     frame.style.display = "unset";
     frame.style.top = "100px";
