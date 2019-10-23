@@ -8,7 +8,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     1.0.0
+// @version     1.0.1
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -1606,7 +1606,7 @@ function showDeletedPost(post) {
 function mgcPl_InsertHtmlAndCSS() {
   var css = document.createElement("style");
   css.type = "text/css";
-  css.innerHTML = `#mgcPlFrame { position: fixed; top: 100px; left: ${visualViewport.width -
+  css.innerHTML = `#mgcPlFrame { position: fixed; top: 100px; left: ${window.innerWidth -
     400 -
     30}px; height: 300px; background-color: black; max-width: 400px;`;
   if (!currentlyEnabledOptions.has("megucaplayerOption"))
@@ -1627,7 +1627,7 @@ function mgcPl_optionClicked() {
     var frame = document.getElementById("mgcPlFrame");
     frame.style.display = "unset";
     frame.style.top = "100px";
-    frame.style.left = `${visualViewport.width - 400 - 30}px`;
+    frame.style.left = `${window.innerWidth - 400 - 30}px`;
     mgcPl_seekerBar_updater = setInterval(mgcPl_updateSeekerBar, 1000);
     if (mgcPl_currentIndex >= 0)
       document.getElementById(

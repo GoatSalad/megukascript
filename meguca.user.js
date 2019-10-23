@@ -11,7 +11,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     3.9.2
+// @version     3.9.3
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
