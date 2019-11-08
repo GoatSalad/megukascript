@@ -1,0 +1,22 @@
+{
+  "name": "megukascript",
+  "version": "4.0.0",
+  "license": "WTFPL",
+  "main": "meguca.user.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoatSalad/megukascript.git"
+  },
+  "devDependencies": {
+    "jshint": "^2.10.2",
+    "tslint": "^5.20.0"
+  },
+  "dependencies": {
+    "almond": "^0.3.3",
+    "gulp": "^4.0.2",
+    "gulp-typescript": "^5.0.1",
+    "gulp-userscript": "^1.1.0",
+    "typescript": "^3.6.4",
+    "uglify-js": "^3.6.4"
+  }
+}
