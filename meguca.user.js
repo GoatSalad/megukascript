@@ -221,6 +221,9 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
             case 0:
                 downloadPostImage(post, val);
                 break;
+            case 2:
+                scanPost(post, true);
+                break;
             case 1:
                 scanPost(post);
             default:
@@ -248,7 +251,7 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
             }
         }
     }
-    async function scanPost(post) {
+    async function scanPost(post, bypass) {
         const name = post.getElementsByClassName("name spaced"), quote = post.getElementsByTagName("blockquote");
         if (quote.length) {
             let text = quote[0].innerText;
@@ -275,7 +278,9 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
                 text === text.toUpperCase()) {
                 post.classList.add("shaking_post");
             }
-            scanned.push(post.id);
+            if (!bypass) {
+                scanned.push(post.id);
+            }
         }
     }
     async function addFormatButton(post) {
@@ -307,7 +312,7 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
     }
     async function mutatedPost(muts) {
         for (const mut of muts) {
-            let post = mut.target;
+            let post = mut.target, bypass = false;
             switch (post.tagName) {
                 case "ARTICLE":
                     break;
@@ -320,6 +325,7 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
                 case "BLOCKQUOTE":
                     if (post.parentElement.classList.contains("post-container")) {
                         post = post.parentElement.parentElement;
+                        bypass = true;
                         break;
                     }
                     continue;
@@ -334,7 +340,7 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
                     continue;
             }
             if (post.id !== "p0" && !post.classList.contains("editing")) {
-                scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, 1);
+                bypass ? dispatchAction(post, 2) : scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, 1);
             }
         }
     }

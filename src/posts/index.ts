@@ -5,7 +5,8 @@ import { formatWord } from "../util"
 
 const enum actions {
   download,
-  scan
+  scan,
+  bypass
 }
 
 const threadContainer = document.getElementById(catalog ? "catalog" : thread ? "thread-container" : "index-thread-container"),
@@ -58,6 +59,9 @@ async function dispatchAction(post: Element, action?: actions, val?: any) {
     case actions.download:
       downloadPostImage(post, val)
       break
+    case actions.bypass:
+      scanPost(post, true)
+      break
     case actions.scan:
       //addNewSong(post)
       scanPost(post)
@@ -90,7 +94,7 @@ async function toggleDeletedPost(post: Element) {
   }
 }
 
-async function scanPost(post: Element) {
+async function scanPost(post: Element, bypass?: boolean) {
   const name = post.getElementsByClassName("name spaced"),
     quote = post.getElementsByTagName("blockquote")
 
@@ -131,7 +135,9 @@ async function scanPost(post: Element) {
       post.classList.add("shaking_post")
     }
 
-    scanned.push(post.id)
+    if (!bypass) {
+      scanned.push(post.id)
+    }
   }
 }
 
@@ -169,7 +175,8 @@ async function formatPost() {
 
 async function mutatedPost(muts: MutationRecord[]) {
   for (const mut of muts) {
-    let post = mut.target as HTMLElement
+    let post = mut.target as HTMLElement,
+      bypass = false
 
     switch (post.tagName) {
       case "ARTICLE":
@@ -184,6 +191,7 @@ async function mutatedPost(muts: MutationRecord[]) {
       case "BLOCKQUOTE":
         if (post.parentElement.classList.contains("post-container")) {
           post = post.parentElement.parentElement
+          bypass = true
           break
         }
 
@@ -201,7 +209,7 @@ async function mutatedPost(muts: MutationRecord[]) {
     }
 
     if (post.id !== "p0" && !post.classList.contains("editing")) {
-      scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, actions.scan)
+      bypass ? dispatchAction(post, actions.bypass) : scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, actions.scan)
     }
   }
 }
