@@ -7,7 +7,7 @@ export const url = window.location.href,
   board = splitPath[1],
   catalog = splitPath[2] === "catalog",
   thread = parseInt(splitPath[2]) || 0,
-  last100 = url.includes("last=100")
+  last100 = url.match(/last\=([0-9]+)/) ? true : false
 
 export function initCommon() {
   if (!boards) {

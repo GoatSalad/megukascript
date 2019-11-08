@@ -22,7 +22,7 @@ define("common/index", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const splitPath = window.location.pathname.split("/");
-    exports.url = window.location.href, exports.protocol = window.location.protocol, exports.host = window.location.hostname, exports.path = window.location.pathname, exports.boards = window.boards, exports.board = splitPath[1], exports.catalog = splitPath[2] === "catalog", exports.thread = parseInt(splitPath[2]) || 0, exports.last100 = exports.url.includes("last=100");
+    exports.url = window.location.href, exports.protocol = window.location.protocol, exports.host = window.location.hostname, exports.path = window.location.pathname, exports.boards = window.boards, exports.board = splitPath[1], exports.catalog = splitPath[2] === "catalog", exports.thread = parseInt(splitPath[2]) || 0, exports.last100 = exports.url.match(/last\=([0-9]+)/) ? true : false;
     function initCommon() {
         if (!exports.boards) {
             throw new Error("megukascript: Invalid boards variable, stopping");
@@ -164,19 +164,11 @@ define("util/index", ["require", "exports", "ui/index"], function (require, expo
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function getIterations(period) {
-        const flash = ui_2.ui.menus[0].tabs[0].get("flash").value;
-        if (flash === Infinity) {
-            return 60 / period;
-        }
-        return flash / period;
+        return ui_2.ui.menus[0].tabs[0].get("flash").value / period;
     }
     exports.getIterations = getIterations;
     function getVibrationIterations() {
-        const vibrate = ui_2.ui.menus[0].tabs[0].get("vibrate").value;
-        if (vibrate === Infinity) {
-            return 120;
-        }
-        return vibrate * 2;
+        return ui_2.ui.menus[0].tabs[0].get("vibrate").value * 2;
     }
     exports.getVibrationIterations = getVibrationIterations;
     function formatWord(word) {
@@ -193,30 +185,30 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
         if (!threadContainer) {
             throw new Error("megukascript: Unable to find thread container, stopping");
         }
-        scanPosts(2);
+        scanPosts(1);
         new MutationObserver((muts) => mutatedPost(muts)).observe(threadContainer, { childList: true, subtree: true });
     }
     exports.initPosts = initPosts;
     async function downloadAllowedFiles(value) {
         if (!common_1.catalog) {
-            scanPosts(1, value.split(' '));
+            scanPosts(0, value.split(' '));
         }
     }
     exports.downloadAllowedFiles = downloadAllowedFiles;
-    async function scanPosts(opt, optVal) {
+    async function scanPosts(action, val) {
         if (common_1.thread || common_1.catalog) {
-            return postsActions(threadContainer.getElementsByTagName("article"), opt, optVal);
+            return postsActions(threadContainer.getElementsByTagName("article"), action, val);
         }
         for (const index of threadContainer.getElementsByClassName("index-thread")) {
             dispatchAction(index);
-            postsActions(index.getElementsByTagName("article"), opt, optVal);
+            postsActions(index.getElementsByTagName("article"), action, val);
         }
     }
-    async function postsActions(posts, opt, optVal) {
+    async function postsActions(posts, action, val) {
         if (posts.length) {
             for (const post of posts) {
                 if (!post.classList.contains("editing")) {
-                    dispatchAction(post, opt, optVal);
+                    dispatchAction(post, action, val);
                 }
             }
         }
@@ -224,12 +216,12 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
             console.warn("megukascript: Posts in thread container do not exist");
         }
     }
-    async function dispatchAction(post, opt, optVal) {
-        switch (opt) {
-            case 1:
-                downloadPostImage(post, optVal);
+    async function dispatchAction(post, action, val) {
+        switch (action) {
+            case 0:
+                downloadPostImage(post, val);
                 break;
-            case 2:
+            case 1:
                 scanPost(post);
             default:
                 toggleDeletedPost(post);
@@ -342,7 +334,7 @@ define("posts/index", ["require", "exports", "posts/parser", "common/index", "ui
                     continue;
             }
             if (post.id !== "p0" && !post.classList.contains("editing")) {
-                scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, 2);
+                scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, 1);
             }
         }
     }
@@ -503,7 +495,7 @@ define("ui/options", ["require", "exports", "ui/index", "posts/index"], function
                 "Vibration Duration: ",
                 undefined,
                 true,
-                Infinity
+                120
             ], [
                 "flash",
                 2,
@@ -512,7 +504,7 @@ define("ui/options", ["require", "exports", "ui/index", "posts/index"], function
                 "Flashing Duration: ",
                 undefined,
                 undefined,
-                Infinity
+                60
             ], [
                 "chuus",
                 0,

@@ -3,6 +3,11 @@ import { thread, catalog } from "../common"
 import { ui } from "../ui"
 import { formatWord } from "../util"
 
+const enum actions {
+  download,
+  scan
+}
+
 const threadContainer = document.getElementById(catalog ? "catalog" : thread ? "thread-container" : "index-thread-container"),
   scanned: string[] = new Array()
 
@@ -11,7 +16,7 @@ export async function initPosts() {
     throw new Error("megukascript: Unable to find thread container, stopping")
   }
 
-  scanPosts(2)
+  scanPosts(actions.scan)
   new MutationObserver((muts) => mutatedPost(muts)).observe(threadContainer, { childList: true, subtree: true })
 }
 
@@ -21,26 +26,26 @@ export async function initPosts() {
 
 export async function downloadAllowedFiles(value: string) {
   if (!catalog) {
-    scanPosts(1, value.split(' '))
+    scanPosts(actions.download, value.split(' '))
   }
 }
 
-async function scanPosts(opt?: number, optVal?: any) {
+async function scanPosts(action?: actions, val?: any) {
   if (thread || catalog) {
-    return postsActions(threadContainer.getElementsByTagName("article"), opt, optVal)
+    return postsActions(threadContainer.getElementsByTagName("article"), action, val)
   }
 
   for (const index of threadContainer.getElementsByClassName("index-thread")) {
     dispatchAction(index)
-    postsActions(index.getElementsByTagName("article"), opt, optVal)
+    postsActions(index.getElementsByTagName("article"), action, val)
   }
 }
 
-async function postsActions(posts: HTMLCollectionOf<HTMLElement>, opt: number, optVal: any) {
+async function postsActions(posts: HTMLCollectionOf<HTMLElement>, action: actions, val: any) {
   if (posts.length) {
     for (const post of posts) {
       if (!post.classList.contains("editing")) {
-        dispatchAction(post, opt, optVal)
+        dispatchAction(post, action, val)
       }
     }
   } else {
@@ -48,12 +53,12 @@ async function postsActions(posts: HTMLCollectionOf<HTMLElement>, opt: number, o
   }
 }
 
-async function dispatchAction(post: Element, opt?: number, optVal?: any) {
-  switch (opt) {
-    case 1:
-      downloadPostImage(post, optVal)
+async function dispatchAction(post: Element, action?: actions, val?: any) {
+  switch (action) {
+    case actions.download:
+      downloadPostImage(post, val)
       break
-    case 2:
+    case actions.scan:
       //addNewSong(post)
       scanPost(post)
     default:
@@ -196,7 +201,7 @@ async function mutatedPost(muts: MutationRecord[]) {
     }
 
     if (post.id !== "p0" && !post.classList.contains("editing")) {
-      scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, 2)
+      scanned.includes(post.id) ? dispatchAction(post) : dispatchAction(post, actions.scan)
     }
   }
 }

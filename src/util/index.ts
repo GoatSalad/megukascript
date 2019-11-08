@@ -1,23 +1,11 @@
 import { ui } from "../ui"
 
 export function getIterations(period: number): number {
-  const flash = ui.menus[0].tabs[0].get("flash").value as number
-
-  if (flash === Infinity) {
-    return 60 / period;
-  }
-
-  return flash / period;
+  return (ui.menus[0].tabs[0].get("flash").value as number) / period;
 }
 
 export function getVibrationIterations(): number {
-  const vibrate = ui.menus[0].tabs[0].get("vibrate").value as number
-
-  if (vibrate === Infinity) {
-    return 120;
-  }
-
-  return vibrate * 2;
+  return (ui.menus[0].tabs[0].get("vibrate").value as number) * 2;
 }
 
 export function formatWord(word: string): string {

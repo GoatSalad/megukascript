@@ -216,7 +216,7 @@ export const options = [
       "Vibration Duration: ",
       undefined,
       true,
-      Infinity
+      120
     ], [
       "flash",
       types.input,
@@ -225,7 +225,7 @@ export const options = [
       "Flashing Duration: ",
       undefined,
       undefined,
-      Infinity
+      60
     ], [
       "chuus",
       types.text,
