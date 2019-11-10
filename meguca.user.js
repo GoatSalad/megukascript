@@ -11,11 +11,13 @@
 // @match *://chiru.no/*
 // @match *://megu.ca/*
 // @match *://kirara.cafe/*
+// @match *://shamik.ooo/*
 // @exclude /^.*://127.0.0.1:8000/(api|assets|html|json)/.*$/
 // @exclude /^.*://meguca.org/(api|assets|html|json)/.*$/
 // @exclude /^.*://chiru.no/(api|assets|html|json)/.*$/
 // @exclude /^.*://megu.ca/(api|assets|html|json)/.*$/
 // @exclude /^.*://kirara.cafe/(api|assets|html|json)/.*$/
+// @exclude /^.*://shamik.ooo/(api|assets|html|json)/.*$/
 // ==/UserScript==
 
 define("common/index", ["require", "exports"], function (require, exports) {

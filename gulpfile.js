@@ -27,14 +27,16 @@ createTask("userscript", `src/**/*.ts`, src =>
 				"*://meguca.org/*",
 				"*://chiru.no/*",
 				"*://megu.ca/*",
-				"*://kirara.cafe/*"
+				"*://kirara.cafe/*",
+				"*://shamik.ooo/*"
 			],
 			exclude: [
 				"/^.*://127\.0\.0\.1:8000/(api|assets|html|json)/.*$/",
 				"/^.*://meguca\.org/(api|assets|html|json)/.*$/",
 				"/^.*://chiru\.no/(api|assets|html|json)/.*$/",
 				"/^.*://megu\.ca/(api|assets|html|json)/.*$/",
-				"/^.*://kirara\.cafe/(api|assets|html|json)/.*$/"
+				"/^.*://kirara\.cafe/(api|assets|html|json)/.*$/",
+				"/^.*://shamik\.ooo/(api|assets|html|json)/.*$/"
 			]
 		}))
 		.pipe(gulp.dest('.'))
