@@ -75,7 +75,7 @@ define("posts/parser", ["require", "exports", "ui/index"], function (require, ex
     }
     exports.mutateChuu = mutateChuu;
     async function mutateDumbPost(name, text) {
-        const dumb = text.toLowerCase().match("dumb ?.{0,20}posters?"), cute = text.toLowerCase().match("cute ?.{0,20}posters?"), uppers = text.match(/[A-Z]/g), yous = text.match(/(?:>>\d* (?:\(You\) )?#)/g);
+        const lowercase = text.toLowerCase(), dumb = lowercase.match("dumb ?.{0,20}posters?"), cute = lowercase.match("cute ?.{0,20}posters?"), uppers = text.match(/[A-Z]/g), yous = text.match(/(?:>>\d* (?:\(You\) )?#)/g);
         if (!text.length && !name.parentElement.parentElement.getElementsByTagName("figcaption").length) {
             addToName(name, `${ui_1.ui.menus[0].tabs[1].get("blanc").enabled ? "dumb" : "cute"} blancposter`);
         }
@@ -88,11 +88,17 @@ define("posts/parser", ["require", "exports", "ui/index"], function (require, ex
         else if (cute) {
             addToName(name, `cute '${cute[0]}' poster`);
         }
-        else if (text.toLowerCase().includes("wait anon")) {
+        else if (lowercase.includes("wait anon")) {
             addToName(name, "dumb haiku poster / 'wait anon' is all she says / don't wait, run away!");
         }
-        else if (text.toLowerCase().includes("virus")) {
+        else if (lowercase.includes("virus")) {
             addToName(name, "virus post do not read");
+        }
+        else if (lowercase.includes("you're out of touch")) {
+            addToName(name, "I'M OUT OF TIME");
+        }
+        else if (lowercase.includes("i'm out of time")) {
+            addToName(name, "YOU'RE OUT OF TOUCH");
         }
         else if (text.length && text.match(/[a-z]/g) && ((!uppers && !yous) || (uppers && yous && uppers.length === yous.length))) {
             addToName(name, "dumb lowercaseposter");
