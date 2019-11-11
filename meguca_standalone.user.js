@@ -5,10 +5,11 @@
 // @include     https://meguca.org/*
 // @include     https://chiru.no/*
 // @include     https://megu.ca/*
+// @include     https://shamik.ooo/*
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     1.0.3
+// @version     1.0.4
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
