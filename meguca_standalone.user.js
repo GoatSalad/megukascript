@@ -9,7 +9,7 @@
 // @include     https://kirara.cafe/*
 // @connect     meguca.org
 // @connect     chiru.no
-// @version     1.0.5
+// @version     1.0.6
 // @author      medukasthegucas
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -271,16 +271,24 @@ function addScriptOptionMenu() {
   musicOption.id = "toggle-music-player-megukascript";
   musicOption.title = "Toggle MMP visibility";
 
+  const mtvOption = document.createElement("a");
+  mtvOption.id = "toggle-mtv-megukascript";
+  mtvOption.title = "Toggle MTV visibility";
+
   // mimics class from other items
   options[0].classList.forEach(c => {
     newOption.classList.add(c);
     musicOption.classList.add(c);
+    mtvOption.classList.add(c);
   });
   newOption.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M2 15s0-6 6-6c4 0 4.5 3.5 7.5 3.5 4 0 4-3.5 4-3.5H22s0 6-6 6c-4 0-5.5-3.5-7.5-3.5-4 0-4 3.5-4 3.5H2"/></svg>';
   musicOption.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M 21 0 L 8 4.625 C 7.449219 4.808594 7 5.417969 7 5.96875 L 7 17.78125 C 6.546875 17.707031 6.035156 17.714844 5.5 17.84375 C 3.566406 18.316406 2 20.0625 2 21.71875 C 2 23.375 3.566406 24.316406 5.5 23.84375 C 7.410156 23.378906 8.960938 21.699219 9 20.0625 C 9 20.042969 9 20.019531 9 20 L 9 8.28125 L 20 4.34375 L 20 14.78125 C 19.546875 14.707031 19.035156 14.714844 18.5 14.84375 C 16.566406 15.316406 15 17.0625 15 18.71875 C 15 20.375 16.566406 21.316406 18.5 20.84375 C 20.433594 20.371094 22 18.65625 22 17 L 22 1 C 22 0.449219 21.550781 0 21 0 Z"></path></svg>';
+  mtvOption.innerHTML = 
+    '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g>	<g>		<path d="M461.913,86.261h-199l54.979-54.979c6.521-6.516,6.521-17.092,0-23.609c-6.521-6.521-17.087-6.521-23.609,0			l-71.674,71.674L150.934,7.675c-6.521-6.521-17.087-6.521-23.609,0c-6.521,6.516-6.521,17.092,0,23.609l54.979,54.978H50.087			C22.468,86.261,0,108.729,0,136.348v322.783c0,27.619,22.468,50.087,50.087,50.087h411.826c27.619,0,50.087-22.468,50.087-50.087			V136.348C512,108.729,489.532,86.261,461.913,86.261z M378.435,392.348c0,27.619-22.468,50.087-50.087,50.087H116.87			c-27.619,0-50.087-22.468-50.087-50.087V203.131c0-27.619,22.468-50.087,50.087-50.087h211.478			c27.619,0,50.087,22.468,50.087,50.087V392.348z M428.522,442.435c-9.22,0-16.696-7.475-16.696-16.696s7.475-16.696,16.696-16.696			s16.696,7.475,16.696,16.696S437.742,442.435,428.522,442.435z M428.522,375.652c-9.22,0-16.696-7.475-16.696-16.696			c0-9.22,7.475-16.696,16.696-16.696s16.696,7.475,16.696,16.696C445.217,368.177,437.742,375.652,428.522,375.652z			 M445.217,292.174c0,9.223-7.473,16.696-16.696,16.696c-9.223,0-16.696-7.473-16.696-16.696v-27.826			c0-9.223,7.473-16.696,16.696-16.696c9.223,0,16.696,7.473,16.696,16.696V292.174z M445.217,197.565			c0,9.223-7.473,16.696-16.696,16.696c-9.223,0-16.696-7.473-16.696-16.696v-27.826c0-9.223,7.473-16.696,16.696-16.696			c9.223,0,16.696,7.473,16.696,16.696V197.565z"/>	</g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg>';
 
+  optionsContainer.insertBefore(mtvOption, options[options.length - 1]);
   optionsContainer.insertBefore(musicOption, options[options.length - 1]);
   optionsContainer.insertBefore(newOption, options[options.length - 1]);
 
@@ -308,6 +316,11 @@ function addScriptOptionMenu() {
   // Add functionality to MMP button
   musicOption.onclick = () => {
     document.getElementById("megucaplayerOption").click();
+  };
+
+  // Add functionality to MTV button
+  mtvOption.onclick = () => {
+    document.getElementById("meguTV").click();
   };
 
   // Add hide click listener to other buttons
